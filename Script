@@ -1,0 +1,882 @@
+-- 끝말잇기 자동봇 FINAL ULTIMATE
+-- 드래그 / 모바일 / 재생성 / 공격단어 fallback 전부 포함
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+pcall(function()
+	if CoreGui:FindFirstChild("끄글봇") then
+		CoreGui["끄글봇"]:Destroy()
+	end
+end)
+
+math.randomseed(tick())
+
+--------------------------------------------------
+-- GUI
+--------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "끄글봇"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,260,0,350)
+frame.Position = UDim2.new(0.5,-130,0.5,-175)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Selectable = true
+frame.Parent = gui
+
+Instance.new("UICorner", frame)
+
+--------------------------------------------------
+-- 드래그
+--------------------------------------------------
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+
+	local delta = input.Position - dragStart
+
+	frame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+frame.InputBegan:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+
+		input.Changed:Connect(function()
+
+			if input.UserInputState ==
+				Enum.UserInputState.End then
+
+				dragging = false
+			end
+		end)
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+
+	if input.UserInputType ==
+		Enum.UserInputType.MouseMovement
+	or input.UserInputType ==
+		Enum.UserInputType.Touch then
+
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+	if input == dragInput
+	and dragging then
+
+		update(input)
+	end
+end)
+
+--------------------------------------------------
+-- 유틸 버튼 생성
+--------------------------------------------------
+local function makeButton(
+	text,
+	size,
+	pos,
+	color,
+	parent
+)
+
+	local btn = Instance.new("TextButton")
+
+	btn.Size = size
+	btn.Position = pos
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.Font = Enum.Font.Code
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.TextSize = 14
+	btn.AutoButtonColor = true
+	btn.Active = true
+	btn.ZIndex = 3
+	btn.Parent = parent
+
+	Instance.new("UICorner", btn)
+
+	return btn
+end
+
+--------------------------------------------------
+-- 제목
+--------------------------------------------------
+local title = Instance.new("TextLabel")
+
+title.Size = UDim2.new(1,0,0,30)
+title.BackgroundTransparency = 1
+title.Text = "끝말잇기 자동봇"
+title.Font = Enum.Font.Code
+title.TextSize = 18
+title.TextColor3 = Color3.new(1,1,1)
+title.ZIndex = 2
+title.Parent = frame
+
+local status = Instance.new("TextLabel")
+
+status.Size = UDim2.new(1,-10,0,25)
+status.Position = UDim2.new(0,5,0,35)
+status.BackgroundTransparency = 1
+status.Text = "로딩중..."
+status.Font = Enum.Font.Code
+status.TextSize = 14
+status.TextColor3 = Color3.fromRGB(180,180,180)
+status.ZIndex = 2
+status.Parent = frame
+
+--------------------------------------------------
+-- 모드
+--------------------------------------------------
+local mode = "ONE"
+
+local oneBtn = makeButton(
+	"한방",
+	UDim2.new(0.5,-15,0,30),
+	UDim2.new(0,10,0,70),
+	Color3.fromRGB(200,70,70),
+	frame
+)
+
+local normalBtn = makeButton(
+	"노멀",
+	UDim2.new(0.5,-15,0,30),
+	UDim2.new(0.5,5,0,70),
+	Color3.fromRGB(70,120,255),
+	frame
+)
+
+local longBtn = makeButton(
+	"긴단어",
+	UDim2.new(1,-20,0,30),
+	UDim2.new(0,10,0,105),
+	Color3.fromRGB(170,120,40),
+	frame
+)
+
+--------------------------------------------------
+-- 속도
+--------------------------------------------------
+local speedLabel = Instance.new("TextLabel")
+
+speedLabel.Size = UDim2.new(1,-10,0,20)
+speedLabel.Position = UDim2.new(0,5,0,140)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "속도: 빠름"
+speedLabel.Font = Enum.Font.Code
+speedLabel.TextSize = 14
+speedLabel.TextColor3 = Color3.fromRGB(200,200,200)
+speedLabel.ZIndex = 2
+speedLabel.Parent = frame
+
+local speeds = {
+	{Name="존빠", Delay={0.001,0.004}},
+	{Name="빠름", Delay={0.01,0.03}},
+	{Name="보통", Delay={0.03,0.07}},
+	{Name="느림", Delay={0.07,0.15}},
+	{Name="존느", Delay={0.2,0.5}}
+}
+
+local currentSpeed = speeds[2]
+
+local speedFrame = Instance.new("Frame")
+
+speedFrame.Size = UDim2.new(1,-20,0,25)
+speedFrame.Position = UDim2.new(0,10,0,160)
+speedFrame.BackgroundTransparency = 1
+speedFrame.ZIndex = 2
+speedFrame.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.Padding = UDim.new(0,3)
+layout.Parent = speedFrame
+
+for _,info in ipairs(speeds) do
+
+	local btn = makeButton(
+		info.Name,
+		UDim2.new(0,45,1,0),
+		UDim2.new(),
+		Color3.fromRGB(50,50,50),
+		speedFrame
+	)
+
+	btn.TextSize = 11
+
+	btn.MouseButton1Click:Connect(function()
+
+		currentSpeed = info
+
+		speedLabel.Text =
+			"속도: "..info.Name
+
+		status.Text =
+			"속도 변경: "..info.Name
+	end)
+end
+
+--------------------------------------------------
+-- 입력모드
+--------------------------------------------------
+local inputMode = "MOBILE"
+
+local mobileBtn = makeButton(
+	"모바일",
+	UDim2.new(0.5,-15,0,25),
+	UDim2.new(0,10,0,195),
+	Color3.fromRGB(70,170,255),
+	frame
+)
+
+local pcBtn = makeButton(
+	"PC",
+	UDim2.new(0.5,-15,0,25),
+	UDim2.new(0.5,5,0,195),
+	Color3.fromRGB(80,80,80),
+	frame
+)
+
+--------------------------------------------------
+-- 메인 버튼
+--------------------------------------------------
+local button = makeButton(
+	"자동 입력",
+	UDim2.new(1,-20,0,40),
+	UDim2.new(0,10,1,-50),
+	Color3.fromRGB(60,180,100),
+	frame
+)
+
+button.TextSize = 17
+
+local rerollBtn = makeButton(
+	"재생성",
+	UDim2.new(0,70,0,25),
+	UDim2.new(1,-80,0,5),
+	Color3.fromRGB(120,80,200),
+	frame
+)
+
+local resetBtn = makeButton(
+	"리셋",
+	UDim2.new(0,70,0,25),
+	UDim2.new(1,-80,0,35),
+	Color3.fromRGB(70,170,120),
+	frame
+)
+
+--------------------------------------------------
+-- 모드 변경
+--------------------------------------------------
+oneBtn.MouseButton1Click:Connect(function()
+
+	mode = "ONE"
+
+	status.Text = "한방모드"
+
+	oneBtn.BackgroundColor3 =
+		Color3.fromRGB(200,70,70)
+
+	normalBtn.BackgroundColor3 =
+		Color3.fromRGB(70,70,70)
+
+	longBtn.BackgroundColor3 =
+		Color3.fromRGB(70,70,70)
+end)
+
+normalBtn.MouseButton1Click:Connect(function()
+
+	mode = "NORMAL"
+
+	status.Text = "노멀모드"
+
+	normalBtn.BackgroundColor3 =
+		Color3.fromRGB(70,120,255)
+
+	oneBtn.BackgroundColor3 =
+		Color3.fromRGB(70,70,70)
+
+	longBtn.BackgroundColor3 =
+		Color3.fromRGB(70,70,70)
+end)
+
+longBtn.MouseButton1Click:Connect(function()
+
+	mode = "LONG"
+
+	status.Text = "긴단어모드"
+
+	longBtn.BackgroundColor3 =
+		Color3.fromRGB(170,120,40)
+
+	oneBtn.BackgroundColor3 =
+		Color3.fromRGB(70,70,70)
+
+	normalBtn.BackgroundColor3 =
+		Color3.fromRGB(70,70,70)
+end)
+
+--------------------------------------------------
+-- 입력모드 변경
+--------------------------------------------------
+mobileBtn.MouseButton1Click:Connect(function()
+
+	inputMode = "MOBILE"
+
+	mobileBtn.BackgroundColor3 =
+		Color3.fromRGB(70,170,255)
+
+	pcBtn.BackgroundColor3 =
+		Color3.fromRGB(80,80,80)
+
+	status.Text = "모바일 입력"
+end)
+
+pcBtn.MouseButton1Click:Connect(function()
+
+	inputMode = "PC"
+
+	pcBtn.BackgroundColor3 =
+		Color3.fromRGB(70,170,255)
+
+	mobileBtn.BackgroundColor3 =
+		Color3.fromRGB(80,80,80)
+
+	status.Text = "PC 입력"
+end)
+
+--------------------------------------------------
+-- 문자열 유틸
+--------------------------------------------------
+local function firstChar(str)
+
+	for _,c in utf8.codes(str) do
+		return utf8.char(c)
+	end
+end
+
+local function lastChar(str)
+
+	local last
+
+	for _,c in utf8.codes(str) do
+		last = utf8.char(c)
+	end
+
+	return last
+end
+
+local function validWord(w)
+
+	return w
+	and utf8.len(w)
+	and utf8.len(w) >= 2
+	and w:match("^[가-힣]+$")
+end
+
+--------------------------------------------------
+-- 사전
+--------------------------------------------------
+local dictionary = {}
+local attackDictionary = {}
+
+local files = {
+	{
+		name = "끄글필수공격단어.txt",
+		attack = true
+	},
+	{
+		name = "끄글 공격단어.txt",
+		attack = true
+	},
+	{
+		name = "끄글단어 목록.txt",
+		attack = false
+	}
+}
+
+local total = 0
+
+for _,data in ipairs(files) do
+
+	local filename = data.name
+
+	if isfile(filename) then
+
+		local success, file =
+			pcall(readfile, filename)
+
+		if success and file then
+
+			for line in file:gmatch("[^\r\n]+") do
+
+				if not line:match("^%[")
+				and not line:match("^깊이") then
+
+					for word in line:gmatch("[가-힣]+") do
+
+						if validWord(word) then
+
+							local first =
+								firstChar(word)
+
+							dictionary[first] =
+								dictionary[first] or {}
+
+							table.insert(
+								dictionary[first],
+								word
+							)
+
+							if data.attack then
+
+								attackDictionary[first] =
+									attackDictionary[first] or {}
+
+								table.insert(
+									attackDictionary[first],
+									word
+								)
+							end
+
+							total += 1
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+status.Text =
+	"단어 "..total.."개 로드"
+
+--------------------------------------------------
+-- 데이터
+--------------------------------------------------
+local usedWords = {}
+local recentWords = {}
+local lastStartChar = nil
+
+local function isUsed(word)
+	return usedWords[word] == true
+end
+
+local function addRecent(word)
+
+	table.insert(recentWords,1,word)
+
+	if #recentWords > 20 then
+		table.remove(recentWords)
+	end
+end
+
+local function wasRecent(word)
+
+	for _,v in ipairs(recentWords) do
+
+		if v == word then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function hasWordStarting(char)
+	return dictionary[char] ~= nil
+end
+
+local function shuffle(tbl)
+
+	for i = #tbl,2,-1 do
+
+		local j = math.random(i)
+
+		tbl[i], tbl[j] =
+			tbl[j], tbl[i]
+	end
+end
+
+local function pickRandomCandidate(candidates)
+
+	if #candidates <= 0 then
+		return nil
+	end
+
+	shuffle(candidates)
+
+	local top = {}
+
+	for i = 1, math.min(5,#candidates) do
+		table.insert(top,candidates[i])
+	end
+
+	return top[
+		math.random(1,#top)
+	]
+end
+
+--------------------------------------------------
+-- 한방
+--------------------------------------------------
+local function findBestWord(startChar)
+
+	local list = dictionary[startChar]
+
+	if not list then
+		return nil
+	end
+
+	local candidates = {}
+
+	for _,word in ipairs(list) do
+
+		local last = lastChar(word)
+
+		if not hasWordStarting(last)
+		and not isUsed(word)
+		and not wasRecent(word) then
+
+			table.insert(
+				candidates,
+				word
+			)
+		end
+	end
+
+	local selected =
+		pickRandomCandidate(candidates)
+
+	if selected then
+		addRecent(selected)
+	end
+
+	return selected
+end
+
+--------------------------------------------------
+-- 노멀
+--------------------------------------------------
+local function findNormalWord(startChar)
+
+	local list =
+		attackDictionary[startChar]
+
+	-- 공격단어 없으면 fallback
+	if not list
+	or #list <= 0 then
+
+		list = dictionary[startChar]
+	end
+
+	if not list then
+		return nil
+	end
+
+	local candidates = {}
+
+	for _,word in ipairs(list) do
+
+		if not isUsed(word)
+		and not wasRecent(word) then
+
+			table.insert(
+				candidates,
+				word
+			)
+		end
+	end
+
+	local selected =
+		pickRandomCandidate(candidates)
+
+	if selected then
+		addRecent(selected)
+	end
+
+	return selected
+end
+
+--------------------------------------------------
+-- 긴단어
+--------------------------------------------------
+local function findLongestWord(startChar)
+
+	local list = dictionary[startChar]
+
+	if not list then
+		return nil
+	end
+
+	local ranked = {}
+
+	for _,word in ipairs(list) do
+
+		if not isUsed(word)
+		and not wasRecent(word) then
+
+			table.insert(ranked,{
+				word = word,
+				len = utf8.len(word)
+			})
+		end
+	end
+
+	table.sort(ranked,function(a,b)
+		return a.len > b.len
+	end)
+
+	local candidates = {}
+
+	for i = 1, math.min(5,#ranked) do
+		table.insert(
+			candidates,
+			ranked[i].word
+		)
+	end
+
+	local selected =
+		pickRandomCandidate(candidates)
+
+	if selected then
+		addRecent(selected)
+	end
+
+	return selected
+end
+
+--------------------------------------------------
+-- 생성
+--------------------------------------------------
+local function generateWord(startChar)
+
+	if mode == "ONE" then
+
+		return findBestWord(startChar)
+
+	elseif mode == "LONG" then
+
+		return findLongestWord(startChar)
+
+	else
+
+		return findNormalWord(startChar)
+	end
+end
+
+--------------------------------------------------
+-- 초성
+--------------------------------------------------
+local CHO = {
+	"ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ",
+	"ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ",
+	"ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"
+}
+
+local function getCho(char)
+
+	local code =
+		utf8.codepoint(char)
+
+	if code >= 44032
+	and code <= 55203 then
+
+		local base = code - 44032
+		local cho =
+			math.floor(base / 588) + 1
+
+		return CHO[cho]
+	end
+
+	return char
+end
+
+--------------------------------------------------
+-- 타이핑
+--------------------------------------------------
+local function typingEffect(word)
+
+	local current = ""
+
+	for _,code in utf8.codes(word) do
+
+		local char =
+			utf8.char(code)
+
+		if inputMode == "MOBILE" then
+
+			ReplicatedStorage
+				:WaitForChild("Remotes")
+				:WaitForChild("TypingWord")
+				:FireServer(
+					current ..
+					getCho(char)
+				)
+
+			task.wait(
+				math.random(
+					currentSpeed.Delay[1]*1000,
+					currentSpeed.Delay[2]*1000
+				)/1000
+			)
+		end
+
+		current = current .. char
+
+		ReplicatedStorage
+			:WaitForChild("Remotes")
+			:WaitForChild("TypingWord")
+			:FireServer(current)
+
+		task.wait(
+			math.random(
+				currentSpeed.Delay[1]*1000,
+				currentSpeed.Delay[2]*1000
+			)/1000
+		)
+	end
+end
+
+--------------------------------------------------
+-- 제출
+--------------------------------------------------
+local function submitWord(word)
+
+	status.Text =
+		"입력중: "..word
+
+	typingEffect(word)
+
+	task.wait(0.1)
+
+	status.Text =
+		"전송: "..word
+
+	ReplicatedStorage
+		:WaitForChild("Remotes")
+		:WaitForChild("SumbitWord")
+		:FireServer(word)
+
+	usedWords[word] = true
+end
+
+--------------------------------------------------
+-- 자동입력
+--------------------------------------------------
+button.MouseButton1Click:Connect(function()
+
+	local success, err =
+		pcall(function()
+
+		local label =
+			player.PlayerGui
+			.GameGui
+			.TriesFrame
+			.SpectatorTipLabel
+
+		local text = label.Text
+
+		local char =
+			text:match("'(.-)'")
+
+		if not char then
+
+			status.Text =
+				"글자 감지 실패"
+
+			return
+		end
+
+		lastStartChar = char
+
+		local word =
+			generateWord(char)
+
+		if word then
+
+			submitWord(word)
+
+		else
+
+			status.Text =
+				"단어 없음"
+		end
+	end)
+
+	if not success then
+
+		status.Text =
+			"오류 발생"
+
+		warn(err)
+	end
+end)
+
+--------------------------------------------------
+-- 재생성
+--------------------------------------------------
+rerollBtn.MouseButton1Click:Connect(function()
+
+	if not lastStartChar then
+
+		status.Text =
+			"이전 글자 없음"
+
+		return
+	end
+
+	local word =
+		generateWord(lastStartChar)
+
+	if word then
+
+		submitWord(word)
+
+	else
+
+		status.Text =
+			"재생성 실패"
+	end
+end)
+
+--------------------------------------------------
+-- 리셋
+--------------------------------------------------
+resetBtn.MouseButton1Click:Connect(function()
+
+	usedWords = {}
+	recentWords = {}
+
+	status.Text =
+		"초기화 완료"
+end)
