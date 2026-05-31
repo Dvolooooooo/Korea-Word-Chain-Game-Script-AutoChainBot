@@ -10,9 +10,9 @@ local TextService = game:GetService("TextService")
 local player = Players.LocalPlayer
 
 pcall(function()
-	if CoreGui:FindFirstChild("끄글봇") then
-		CoreGui["끄글봇"]:Destroy()
-	end
+        if CoreGui:FindFirstChild("끄글봇") then
+                CoreGui["끄글봇"]:Destroy()
+        end
 end)
 
 math.randomseed(tick())
@@ -30,7 +30,7 @@ gui.Parent = CoreGui
 
 -- searchVisible 상태에 따라 frame 높이 전환
 local FRAME_H_CLOSED = 350
-local FRAME_H_OPEN   = 490
+local FRAME_H_OPEN   = 530
 local searchVisible = false
 
 local frame = Instance.new("Frame")
@@ -55,42 +55,42 @@ local dragStart
 local startPos
 
 local function update(input)
-	local delta = input.Position - dragStart
-	frame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+        )
 end
 
 frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1
-		or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch then
 
-		dragging = true
-		dragStart = input.Position
-		startPos = frame.Position
+                dragging = true
+                dragStart = input.Position
+                startPos = frame.Position
 
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
+                input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                                dragging = false
+                        end
+                end)
+        end
 end)
 
 frame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement
-		or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+                or input.UserInputType == Enum.UserInputType.Touch then
+                dragInput = input
+        end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		update(input)
-	end
+        if input == dragInput and dragging then
+                update(input)
+        end
 end)
 
 
@@ -99,20 +99,20 @@ end)
 -- 유틸 버튼 생성
 
 local function makeButton(text, size, pos, color, parent)
-	local btn = Instance.new("TextButton")
-	btn.Size = size
-	btn.Position = pos
-	btn.BackgroundColor3 = color
-	btn.Text = text
-	btn.Font = Enum.Font.Code
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.TextSize = 14
-	btn.AutoButtonColor = true
-	btn.Active = true
-	btn.ZIndex = 3
-	btn.Parent = parent
-	Instance.new("UICorner", btn)
-	return btn
+        local btn = Instance.new("TextButton")
+        btn.Size = size
+        btn.Position = pos
+        btn.BackgroundColor3 = color
+        btn.Text = text
+        btn.Font = Enum.Font.Code
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        btn.TextSize = 14
+        btn.AutoButtonColor = true
+        btn.Active = true
+        btn.ZIndex = 3
+        btn.Parent = parent
+        Instance.new("UICorner", btn)
+        return btn
 end
 
 
@@ -163,27 +163,27 @@ status.Parent = frame
 local mode = "ONE"
 
 local oneBtn = makeButton(
-	"한방",
-	UDim2.new(0.5, -15, 0, 30),
-	UDim2.new(0, 10, 0, 70),
-	Color3.fromRGB(200, 70, 70),
-	frame
+        "한방",
+        UDim2.new(0.5, -15, 0, 30),
+        UDim2.new(0, 10, 0, 70),
+        Color3.fromRGB(200, 70, 70),
+        frame
 )
 
 local normalBtn = makeButton(
-	"노멀",
-	UDim2.new(0.5, -15, 0, 30),
-	UDim2.new(0.5, 5, 0, 70),
-	Color3.fromRGB(70, 120, 255),
-	frame
+        "노멀",
+        UDim2.new(0.5, -15, 0, 30),
+        UDim2.new(0.5, 5, 0, 70),
+        Color3.fromRGB(70, 120, 255),
+        frame
 )
 
 local longBtn = makeButton(
-	"긴단어",
-	UDim2.new(1, -20, 0, 30),
-	UDim2.new(0, 10, 0, 105),
-	Color3.fromRGB(170, 120, 40),
-	frame
+        "긴단어",
+        UDim2.new(1, -20, 0, 30),
+        UDim2.new(0, 10, 0, 105),
+        Color3.fromRGB(170, 120, 40),
+        frame
 )
 
 
@@ -203,11 +203,11 @@ speedLabel.ZIndex = 2
 speedLabel.Parent = frame
 
 local speeds = {
-	{Name = "존빠", Delay = {0.001, 0.004}},
-	{Name = "빠름", Delay = {0.01,  0.03}},
-	{Name = "보통", Delay = {0.03,  0.07}},
-	{Name = "느림", Delay = {0.07,  0.15}},
-	{Name = "존느", Delay = {0.2,   0.5}}
+        {Name = "존빠", Delay = {0.001, 0.004}},
+        {Name = "빠름", Delay = {0.01,  0.03}},
+        {Name = "보통", Delay = {0.03,  0.07}},
+        {Name = "느림", Delay = {0.07,  0.15}},
+        {Name = "존느", Delay = {0.2,   0.5}}
 }
 
 local currentSpeed = speeds[2]
@@ -225,19 +225,19 @@ layout.Padding = UDim.new(0, 3)
 layout.Parent = speedFrame
 
 for _, info in ipairs(speeds) do
-	local btn = makeButton(
-		info.Name,
-		UDim2.new(0, 45, 1, 0),
-		UDim2.new(),
-		Color3.fromRGB(50, 50, 50),
-		speedFrame
-	)
-	btn.TextSize = 11
-	btn.MouseButton1Click:Connect(function()
-		currentSpeed = info
-		speedLabel.Text = "속도: " .. info.Name
-		status.Text = "속도 변경: " .. info.Name
-	end)
+        local btn = makeButton(
+                info.Name,
+                UDim2.new(0, 45, 1, 0),
+                UDim2.new(),
+                Color3.fromRGB(50, 50, 50),
+                speedFrame
+        )
+        btn.TextSize = 11
+        btn.MouseButton1Click:Connect(function()
+                currentSpeed = info
+                speedLabel.Text = "속도: " .. info.Name
+                status.Text = "속도 변경: " .. info.Name
+        end)
 end
 
 
@@ -248,19 +248,19 @@ end
 local inputMode = "MOBILE"
 
 local mobileBtn = makeButton(
-	"모바일",
-	UDim2.new(0.5, -15, 0, 25),
-	UDim2.new(0, 10, 0, 195),
-	Color3.fromRGB(70, 170, 255),
-	frame
+        "모바일",
+        UDim2.new(0.5, -15, 0, 25),
+        UDim2.new(0, 10, 0, 195),
+        Color3.fromRGB(70, 170, 255),
+        frame
 )
 
 local pcBtn = makeButton(
-	"PC",
-	UDim2.new(0.5, -15, 0, 25),
-	UDim2.new(0.5, 5, 0, 195),
-	Color3.fromRGB(80, 80, 80),
-	frame
+        "PC",
+        UDim2.new(0.5, -15, 0, 25),
+        UDim2.new(0.5, 5, 0, 195),
+        Color3.fromRGB(80, 80, 80),
+        frame
 )
 
 
@@ -342,10 +342,51 @@ searchCountLbl.TextXAlignment = Enum.TextXAlignment.Left
 searchCountLbl.ZIndex = 3
 searchCountLbl.Parent = searchContainer
 
+-- 유형 필터 버튼 행 (전체 / 한방 / 긴단어 / 노멀)
+local typeFilterRow = Instance.new("Frame")
+typeFilterRow.Size = UDim2.new(1, -10, 0, 24)
+typeFilterRow.Position = UDim2.new(0, 5, 0, 75)
+typeFilterRow.BackgroundTransparency = 1
+typeFilterRow.ZIndex = 3
+typeFilterRow.Parent = searchContainer
+
+local typeLayout = Instance.new("UIListLayout")
+typeLayout.FillDirection = Enum.FillDirection.Horizontal
+typeLayout.Padding = UDim.new(0, 4)
+typeLayout.SortOrder = Enum.SortOrder.LayoutOrder
+typeLayout.Parent = typeFilterRow
+
+local function makeTypeBtn(label, order)
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(0, 54, 1, 0)
+        b.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
+        b.BorderSizePixel = 0
+        b.Text = label
+        b.Font = Enum.Font.Code
+        b.TextSize = 11
+        b.TextColor3 = Color3.fromRGB(180, 180, 200)
+        b.AutoButtonColor = true
+        b.ZIndex = 4
+        b.LayoutOrder = order
+        b.Parent = typeFilterRow
+        Instance.new("UICorner", b)
+        return b
+end
+
+local typeBtnAll    = makeTypeBtn("전체",   1)
+local typeBtnAttack = makeTypeBtn("한방",   2)
+local typeBtnLong   = makeTypeBtn("긴단어", 3)
+local typeBtnNormal = makeTypeBtn("노멀",   4)
+
+-- 활성 유형 강조
+local TYPE_ACTIVE_COLOR  = Color3.fromRGB(40, 100, 220)
+local TYPE_IDLE_COLOR    = Color3.fromRGB(50, 50, 65)
+typeBtnAll.BackgroundColor3 = TYPE_ACTIVE_COLOR   -- 기본값 전체
+
 -- 결과 스크롤프레임
 local resultsFrame = Instance.new("ScrollingFrame")
-resultsFrame.Size = UDim2.new(1, -20, 0, 140)
-resultsFrame.Position = UDim2.new(0, 10, 0, 75)
+resultsFrame.Size = UDim2.new(1, -20, 0, 192)
+resultsFrame.Position = UDim2.new(0, 10, 0, 103)
 resultsFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 resultsFrame.BorderSizePixel = 0
 resultsFrame.ScrollBarThickness = 4
@@ -367,16 +408,6 @@ resultsPad.PaddingTop = UDim.new(0, 3)
 resultsPad.PaddingBottom = UDim.new(0, 3)
 resultsPad.Parent = resultsFrame
 
--- 더보기 버튼
-local moreBtnContainer = makeButton(
-	"▼  더보기",
-	UDim2.new(1, -20, 0, 24),
-	UDim2.new(0, 10, 0, 219),
-	Color3.fromRGB(45, 65, 110),
-	searchContainer
-)
-moreBtnContainer.TextSize = 12
-moreBtnContainer.Visible = false
 
 
 ---
@@ -384,28 +415,28 @@ moreBtnContainer.Visible = false
 -- 메인 버튼
 
 local button = makeButton(
-	"자동 입력",
-	UDim2.new(1, -20, 0, 40),
-	UDim2.new(0, 10, 1, -50),
-	Color3.fromRGB(60, 180, 100),
-	frame
+        "자동 입력",
+        UDim2.new(1, -20, 0, 40),
+        UDim2.new(0, 10, 1, -50),
+        Color3.fromRGB(60, 180, 100),
+        frame
 )
 button.TextSize = 17
 
 local rerollBtn = makeButton(
-	"재생성",
-	UDim2.new(0, 70, 0, 25),
-	UDim2.new(1, -80, 0, 5),
-	Color3.fromRGB(120, 80, 200),
-	frame
+        "재생성",
+        UDim2.new(0, 70, 0, 25),
+        UDim2.new(1, -80, 0, 5),
+        Color3.fromRGB(120, 80, 200),
+        frame
 )
 
 local resetBtn = makeButton(
-	"리셋",
-	UDim2.new(0, 70, 0, 25),
-	UDim2.new(1, -80, 0, 35),
-	Color3.fromRGB(70, 170, 120),
-	frame
+        "리셋",
+        UDim2.new(0, 70, 0, 25),
+        UDim2.new(1, -80, 0, 35),
+        Color3.fromRGB(70, 170, 120),
+        frame
 )
 
 
@@ -414,27 +445,27 @@ local resetBtn = makeButton(
 -- 모드 변경
 
 oneBtn.MouseButton1Click:Connect(function()
-	mode = "ONE"
-	status.Text = "한방모드"
-	oneBtn.BackgroundColor3    = Color3.fromRGB(200, 70, 70)
-	normalBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-	longBtn.BackgroundColor3   = Color3.fromRGB(70, 70, 70)
+        mode = "ONE"
+        status.Text = "한방모드"
+        oneBtn.BackgroundColor3    = Color3.fromRGB(200, 70, 70)
+        normalBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        longBtn.BackgroundColor3   = Color3.fromRGB(70, 70, 70)
 end)
 
 normalBtn.MouseButton1Click:Connect(function()
-	mode = "NORMAL"
-	status.Text = "노멀모드"
-	normalBtn.BackgroundColor3 = Color3.fromRGB(70, 120, 255)
-	oneBtn.BackgroundColor3    = Color3.fromRGB(70, 70, 70)
-	longBtn.BackgroundColor3   = Color3.fromRGB(70, 70, 70)
+        mode = "NORMAL"
+        status.Text = "노멀모드"
+        normalBtn.BackgroundColor3 = Color3.fromRGB(70, 120, 255)
+        oneBtn.BackgroundColor3    = Color3.fromRGB(70, 70, 70)
+        longBtn.BackgroundColor3   = Color3.fromRGB(70, 70, 70)
 end)
 
 longBtn.MouseButton1Click:Connect(function()
-	mode = "LONG"
-	status.Text = "긴단어모드"
-	longBtn.BackgroundColor3   = Color3.fromRGB(170, 120, 40)
-	oneBtn.BackgroundColor3    = Color3.fromRGB(70, 70, 70)
-	normalBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        mode = "LONG"
+        status.Text = "긴단어모드"
+        longBtn.BackgroundColor3   = Color3.fromRGB(170, 120, 40)
+        oneBtn.BackgroundColor3    = Color3.fromRGB(70, 70, 70)
+        normalBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 end)
 
 
@@ -443,17 +474,17 @@ end)
 -- 입력모드 변경
 
 mobileBtn.MouseButton1Click:Connect(function()
-	inputMode = "MOBILE"
-	mobileBtn.BackgroundColor3 = Color3.fromRGB(70, 170, 255)
-	pcBtn.BackgroundColor3     = Color3.fromRGB(80, 80, 80)
-	status.Text = "모바일 입력"
+        inputMode = "MOBILE"
+        mobileBtn.BackgroundColor3 = Color3.fromRGB(70, 170, 255)
+        pcBtn.BackgroundColor3     = Color3.fromRGB(80, 80, 80)
+        status.Text = "모바일 입력"
 end)
 
 pcBtn.MouseButton1Click:Connect(function()
-	inputMode = "PC"
-	pcBtn.BackgroundColor3     = Color3.fromRGB(70, 170, 255)
-	mobileBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-	status.Text = "PC 입력"
+        inputMode = "PC"
+        pcBtn.BackgroundColor3     = Color3.fromRGB(70, 170, 255)
+        mobileBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        status.Text = "PC 입력"
 end)
 
 
@@ -462,28 +493,28 @@ end)
 -- 햄버거 토글
 
 hamburgerBtn.MouseButton1Click:Connect(function()
-	searchVisible = not searchVisible
-	searchContainer.Visible = searchVisible
+        searchVisible = not searchVisible
+        searchContainer.Visible = searchVisible
 
-	if searchVisible then
-		frame.Size = UDim2.new(0, 260, 0, FRAME_H_OPEN)
-		frame.Position = UDim2.new(
-			frame.Position.X.Scale,
-			frame.Position.X.Offset,
-			frame.Position.Y.Scale,
-			frame.Position.Y.Offset - (FRAME_H_OPEN - FRAME_H_CLOSED) / 2
-		)
-		hamburgerBtn.BackgroundColor3 = Color3.fromRGB(30, 60, 160)
-	else
-		frame.Size = UDim2.new(0, 260, 0, FRAME_H_CLOSED)
-		frame.Position = UDim2.new(
-			frame.Position.X.Scale,
-			frame.Position.X.Offset,
-			frame.Position.Y.Scale,
-			frame.Position.Y.Offset + (FRAME_H_OPEN - FRAME_H_CLOSED) / 2
-		)
-		hamburgerBtn.BackgroundColor3 = Color3.fromRGB(50, 80, 140)
-	end
+        if searchVisible then
+                frame.Size = UDim2.new(0, 260, 0, FRAME_H_OPEN)
+                frame.Position = UDim2.new(
+                        frame.Position.X.Scale,
+                        frame.Position.X.Offset,
+                        frame.Position.Y.Scale,
+                        frame.Position.Y.Offset - (FRAME_H_OPEN - FRAME_H_CLOSED) / 2
+                )
+                hamburgerBtn.BackgroundColor3 = Color3.fromRGB(30, 60, 160)
+        else
+                frame.Size = UDim2.new(0, 260, 0, FRAME_H_CLOSED)
+                frame.Position = UDim2.new(
+                        frame.Position.X.Scale,
+                        frame.Position.X.Offset,
+                        frame.Position.Y.Scale,
+                        frame.Position.Y.Offset + (FRAME_H_OPEN - FRAME_H_CLOSED) / 2
+                )
+                hamburgerBtn.BackgroundColor3 = Color3.fromRGB(50, 80, 140)
+        end
 end)
 
 
@@ -492,24 +523,24 @@ end)
 -- 문자열 유틸
 
 local function firstChar(str)
-	for _, c in utf8.codes(str) do
-		return utf8.char(c)
-	end
+        for _, c in utf8.codes(str) do
+                return utf8.char(c)
+        end
 end
 
 local function lastChar(str)
-	local last
-	for _, c in utf8.codes(str) do
-		last = utf8.char(c)
-	end
-	return last
+        local last
+        for _, c in utf8.codes(str) do
+                last = utf8.char(c)
+        end
+        return last
 end
 
 local function validWord(w)
-	return w
-		and utf8.len(w)
-		and utf8.len(w) >= 2
-		and w:match("^[가-힣]+$")
+        return w
+                and utf8.len(w)
+                and utf8.len(w) >= 2
+                and w:match("^[가-힣]+$")
 end
 
 
@@ -518,64 +549,120 @@ end
 -- 초성 테이블
 
 local CHO = {
-	"ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ",
-	"ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ",
-	"ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"
+        "ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ",
+        "ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ",
+        "ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"
 }
 
 local function getCho(char)
-	local code = utf8.codepoint(char)
-	if code >= 44032 and code <= 55203 then
-		local base = code - 44032
-		local cho = math.floor(base / 588) + 1
-		return CHO[cho]
-	end
-	return char
+        local code = utf8.codepoint(char)
+        if code >= 44032 and code <= 55203 then
+                local base = code - 44032
+                local cho = math.floor(base / 588) + 1
+                return CHO[cho]
+        end
+        return char
 end
 
 
 ---
 
--- 스마트 두음법칙
--- 두음법칙 대상: 초성이 ㄴ(2) 또는 ㄹ(5) 인 글자만
--- → ㄴ·ㄹ·ㅇ 세 가지 초성으로 변형해 사전 탐색
--- ㅇ 초성은 변형 없이 그대로 사용
+-- 표준 두음법칙 + 신엘룰/구엘룰 확장 (초성+중성 조합 기반)
+--
+-- 중성 인덱스 (0-base):
+--   ㅏ=0 ㅐ=1 ㅑ=2 ㅒ=3 ㅓ=4 ㅔ=5 ㅕ=6 ㅖ=7
+--   ㅗ=8 ㅘ=9 ㅙ=10 ㅚ=11 ㅛ=12 ㅜ=13 ㅝ=14 ㅞ=15 ㅟ=16
+--   ㅠ=17 ㅡ=18 ㅢ=19 ㅣ=20
+--
+-- [ㄴ 계열] 아래 중성일 때만 ㄴ→ㅇ 두음법칙 적용
+--   ㅑ ㅒ ㅕ ㅖ ㅛ ㅠ ㅣ  (냐→야 녀→여 뇨→요 뉴→유 니→이 등)
+-- [ㄹ 계열]
+--   ㅑ ㅒ ㅕ ㅖ ㅛ ㅟ ㅠ ㅣ → ㄹ→ㅇ (랴→야 려→여 료→요 류→유 리→이 뤼→위 등)
+--   나머지 모음              → ㄹ→ㄴ (라→나 래→내 로→노 루→누 르→느 등)
+--
+-- fallback 순서:
+--   ㄴ계열: ㅇ 변형 → ㄴ 원본
+--   ㄹ(ㅇ변환 모음): ㅇ → ㄴ → ㄹ  (윰→늄→륨 순서)
+--   ㄹ(ㄴ변환 모음): ㄴ → ㄹ        (노→로 순서)
 
-local DUUM_IDX      = {[2] = true, [5] = true}
-local DUUM_VARIANTS = {2, 5, 11}
+-- ㄴ→ㅇ, ㄹ→ㅇ 를 유발하는 중성 인덱스
+local N_TO_O = {[2]=true,[3]=true,[6]=true,[7]=true,[12]=true,[17]=true,[20]=true}
+-- ㄹ→ㅇ 를 유발하는 중성 인덱스 (N_TO_O + ㅟ(16))
+local R_TO_O = {[2]=true,[3]=true,[6]=true,[7]=true,[12]=true,[16]=true,[17]=true,[20]=true}
 
 local function getChoIndex(char)
-	local code = utf8.codepoint(char)
-	if code >= 44032 and code <= 55203 then
-		return math.floor((code - 44032) / 588)
-	end
-	return nil
+        local code = utf8.codepoint(char)
+        if code >= 44032 and code <= 55203 then
+                return math.floor((code - 44032) / 588)
+        end
+        return nil
+end
+
+local function getJungIndex(char)
+        local code = utf8.codepoint(char)
+        if code >= 44032 and code <= 55203 then
+                return math.floor(((code - 44032) % 588) / 28)
+        end
+        return nil
 end
 
 local function replaceChoPart(char, newChoIdx)
-	local code = utf8.codepoint(char)
-	if code >= 44032 and code <= 55203 then
-		local rest = (code - 44032) % 588
-		return utf8.char(44032 + newChoIdx * 588 + rest)
-	end
-	return char
+        local code = utf8.codepoint(char)
+        if code >= 44032 and code <= 55203 then
+                local rest = (code - 44032) % 588
+                return utf8.char(44032 + newChoIdx * 588 + rest)
+        end
+        return char
 end
 
+-- 주어진 글자의 두음법칙 변형 목록을 fallback 순서로 반환
+-- (첫 번째가 가장 우선, 마지막이 최후 fallback)
 local function getDuumVariants(startChar)
-	local choIdx = getChoIndex(startChar)
-	if not choIdx or not DUUM_IDX[choIdx] then
-		return {startChar}
-	end
-	local variants = {}
-	local seen = {}
-	for _, idx in ipairs(DUUM_VARIANTS) do
-		local v = replaceChoPart(startChar, idx)
-		if not seen[v] then
-			seen[v] = true
-			table.insert(variants, v)
-		end
-	end
-	return variants
+        local choIdx  = getChoIndex(startChar)
+        local jungIdx = getJungIndex(startChar)
+
+        if not choIdx or not jungIdx then
+                return {startChar}
+        end
+
+        local variants = {}
+        local seen = {}
+
+        local function add(cho)
+                local v = replaceChoPart(startChar, cho)
+                if not seen[v] then
+                        seen[v] = true
+                        table.insert(variants, v)
+                end
+        end
+
+        if choIdx == 2 then -- ㄴ 계열
+                if N_TO_O[jungIdx] then
+                        -- 냐→야, 녀→여, 뇨→요, 뉴→유, 니→이 등
+                        add(11) -- ㅇ 변형 우선
+                        add(2)  -- ㄴ 원본 fallback
+                else
+                        add(2)  -- 두음법칙 해당 없음
+                end
+
+        elseif choIdx == 5 then -- ㄹ 계열
+                if R_TO_O[jungIdx] then
+                        -- 랴→야, 려→여, 료→요, 류→유, 리→이, 뤼→위 등
+                        -- ㄴ 중간단계도 인정(뉴/늄 계열): 순서 ㅇ→ㄴ→ㄹ
+                        add(11) -- ㅇ 변형 (유, 윰, 율 등)
+                        add(2)  -- ㄴ 변형 (뉴, 늄, 눌 등)
+                        add(5)  -- ㄹ 원본 최후 fallback
+                else
+                        -- 라→나, 래→내, 로→노, 루→누, 르→느, 뢰→뇌 등
+                        add(2)  -- ㄴ 변형 우선
+                        add(5)  -- ㄹ 원본 fallback
+                end
+
+        else
+                add(choIdx) -- 두음법칙 해당 없음
+        end
+
+        return variants
 end
 
 
@@ -585,44 +672,48 @@ end
 
 local dictionary = {}
 local attackDictionary = {}
+local attackSet = {}        -- 한방(공격) 단어 빠른 조회용
 
 local files = {
-	{name = "끄글필수공격단어.txt", attack = true},
-	{name = "끄글 공격단어.txt",    attack = true},
-	{name = "끄글단어 목록.txt",    attack = false},
-	{name = "신엙룰 필수공격.txt",  attack = true},
-	{name = "신엙룰 공격.txt",      attack = true},
-	{name = "신엙룰 단어.txt",      attack = false},
+        {name = "끄글필수공격단어.txt",  attack = true},
+        {name = "끄글 공격단어.txt",     attack = true},
+        {name = "끄글단어 목록.txt",     attack = false},
+        {name = "끄글방어단어.txt",      attack = false},
+        {name = "신엜룰 필수공격.txt",   attack = true},
+        {name = "신엜룰 공격단어.txt",   attack = true},
+        {name = "신엜룰 방어단어.txt",   attack = false},
+        {name = "신엜룰 단어목록.txt",   attack = false},
 }
 
 local total = 0
 
 for _, data in ipairs(files) do
-	local filename = data.name
-	if isfile(filename) then
-		local success, file = pcall(readfile, filename)
-		if success and file then
-			for line in file:gmatch("[^\r\n]+") do
-				if not line:match("^%[") and not line:match("^깊이") then
-					for word in line:gmatch("[가-힣]+") do
-						if validWord(word) then
-							local first = firstChar(word)
+        local filename = data.name
+        if isfile(filename) then
+                local success, file = pcall(readfile, filename)
+                if success and file then
+                        for line in file:gmatch("[^\r\n]+") do
+                                if not line:match("^%[") and not line:match("^깊이") then
+                                        for word in line:gmatch("[가-힣]+") do
+                                                if validWord(word) then
+                                                        local first = firstChar(word)
 
-							dictionary[first] = dictionary[first] or {}
-							table.insert(dictionary[first], word)
+                                                        dictionary[first] = dictionary[first] or {}
+                                                        table.insert(dictionary[first], word)
 
-							if data.attack then
-								attackDictionary[first] = attackDictionary[first] or {}
-								table.insert(attackDictionary[first], word)
-							end
+                                                        if data.attack then
+                                                                attackDictionary[first] = attackDictionary[first] or {}
+                                                                table.insert(attackDictionary[first], word)
+                                                                attackSet[word] = true
+                                                        end
 
-							total += 1
-						end
-					end
-				end
-			end
-		end
-	end
+                                                        total += 1
+                                                end
+                                        end
+                                end
+                        end
+                end
+        end
 end
 
 status.Text = "단어 " .. total .. "개 로드"
@@ -632,149 +723,202 @@ status.Text = "단어 " .. total .. "개 로드"
 
 -- 사전검색 로직
 
-local PAGE_SIZE   = 20          -- 한 번에 보여줄 개수
-local allResults  = {}          -- 현재 검색 전체 결과
-local shownCount  = 0           -- 현재 화면에 표시된 수
+local allResults = {}       -- 현재 검색 전체 결과
+local searchType = "ALL"    -- "ALL" | "ATTACK" | "LONG" | "NORMAL"
 
 -- RichText 특수문자 이스케이프
 local function escapeRich(s)
-	s = s:gsub("&",  "&amp;")
-	s = s:gsub("<",  "&lt;")
-	s = s:gsub(">",  "&gt;")
-	s = s:gsub('"',  "&quot;")
-	return s
+        s = s:gsub("&",  "&amp;")
+        s = s:gsub("<",  "&lt;")
+        s = s:gsub(">",  "&gt;")
+        s = s:gsub('"',  "&quot;")
+        return s
 end
 
--- 결과 1행 생성 (query 부분을 파란 강조 표시)
-local function makeResultRow(word, query, order)
-	local row = Instance.new("TextLabel")
-	row.Size = UDim2.new(1, 0, 0, 21)
-	row.BackgroundColor3 = Color3.fromRGB(36, 36, 48)
-	row.BorderSizePixel = 0
-	row.RichText = true
-	row.Font = Enum.Font.Code
-	row.TextSize = 12
-	row.TextColor3 = Color3.new(1, 1, 1)
-	row.TextXAlignment = Enum.TextXAlignment.Left
-	row.ZIndex = 4
-	row.LayoutOrder = order
-	row.Parent = resultsFrame
-	Instance.new("UICorner", row)
+-- 결과 1행 생성
+-- query 부분 파란 강조, 한방단어는 왼쪽에 빨간 점 표시
+local function makeResultRow(entry, order)
+        local word  = entry.word
+        local query = entry.query
+        local isAtk = entry.isAttack
 
-	-- query 위치 찾아 파란 강조
-	local qLen = #query
-	local pos = word:find(query, 1, true)
-	if pos then
-		local pre  = escapeRich(word:sub(1, pos - 1))
-		local mid  = escapeRich(word:sub(pos, pos + qLen - 1))
-		local suf  = escapeRich(word:sub(pos + qLen))
-		row.Text = "  " .. pre
-			.. '<font color="rgb(100,180,255)"><b>' .. mid .. "</b></font>"
-			.. suf
-	else
-		row.Text = "  " .. escapeRich(word)
-	end
+        local row = Instance.new("TextLabel")
+        row.Size = UDim2.new(1, 0, 0, 21)
+        row.BackgroundColor3 = Color3.fromRGB(36, 36, 48)
+        row.BorderSizePixel = 0
+        row.RichText = true
+        row.Font = Enum.Font.Code
+        row.TextSize = 12
+        row.TextColor3 = Color3.new(1, 1, 1)
+        row.TextXAlignment = Enum.TextXAlignment.Left
+        row.ZIndex = 4
+        row.LayoutOrder = order
+        row.Parent = resultsFrame
+        Instance.new("UICorner", row)
 
-	return row
-end
+        -- 앞에 유형 도트: 한방=빨강, 노멀=회색
+        local dot = isAtk
+                and '<font color="rgb(255,90,90)">●</font> '
+                or  '<font color="rgb(70,70,85)">●</font> '
 
-local function renderPage()
-	local endIdx = math.min(shownCount + PAGE_SIZE, #allResults)
-	for i = shownCount + 1, endIdx do
-		makeResultRow(allResults[i].word, allResults[i].query, i)
-	end
-	shownCount = endIdx
+        -- query 위치 찾아 파란 강조
+        local qLen = #query
+        local pos = word:find(query, 1, true)
+        local body
+        if pos then
+                local pre = escapeRich(word:sub(1, pos - 1))
+                local mid = escapeRich(word:sub(pos, pos + qLen - 1))
+                local suf = escapeRich(word:sub(pos + qLen))
+                body = pre .. '<font color="rgb(100,180,255)"><b>' .. mid .. "</b></font>" .. suf
+        else
+                body = escapeRich(word)
+        end
 
-	-- CanvasSize 갱신
-	local contentH = resultsLayout.AbsoluteContentSize.Y + 6
-	resultsFrame.CanvasSize = UDim2.new(0, 0, 0, contentH)
-
-	-- 더보기 버튼 표시 여부
-	moreBtnContainer.Visible = shownCount < #allResults
+        row.Text = " " .. dot .. body
+        return row
 end
 
 local function clearResults()
-	for _, child in ipairs(resultsFrame:GetChildren()) do
-		if child:IsA("TextLabel") then child:Destroy() end
-	end
+        for _, child in ipairs(resultsFrame:GetChildren()) do
+                if child:IsA("TextLabel") then child:Destroy() end
+        end
+end
+
+-- 전체 결과를 한 번에 렌더 (페이지 없음, 스크롤로 전부 볼 수 있음)
+local function renderAll()
+        clearResults()
+        for i, entry in ipairs(allResults) do
+                makeResultRow(entry, i)
+        end
+        local contentH = resultsLayout.AbsoluteContentSize.Y + 6
+        resultsFrame.CanvasSize = UDim2.new(0, 0, 0, contentH)
+        resultsFrame.CanvasPosition = Vector2.new(0, 0)
 end
 
 local function doSearch(query)
-	clearResults()
-	allResults = {}
-	shownCount = 0
+        query = query:match("^%s*(.-)%s*$")
 
-	query = query:match("^%s*(.-)%s*$")
+        if query == "" then
+                allResults = {}
+                queryBadge.Visible = false
+                searchCountLbl.Text = ""
+                clearResults()
+                resultsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+                return
+        end
 
-	if query == "" then
-		queryBadge.Visible = false
-		searchCountLbl.Text = ""
-		moreBtnContainer.Visible = false
-		resultsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-		return
-	end
+        -- 뱃지 크기를 쿼리 길이에 맞게 조정
+        local badgeW = math.max(30, utf8.len(query) * 13 + 12)
+        queryBadge.Size = UDim2.new(0, badgeW, 0, 20)
+        queryBadgeText.Text = query
+        queryBadge.Visible = true
 
-	-- 뱃지 크기를 쿼리 길이에 맞게 조정
-	local badgeW = math.max(30, utf8.len(query) * 13 + 12)
-	queryBadge.Size = UDim2.new(0, badgeW, 0, 20)
-	queryBadgeText.Text = query
-	queryBadge.Visible = true
+        local qLen = #query
+        local seen = {}
+        local raw  = {}
 
-	local qLen = #query
-	local seen = {}
+        -- 모든 단어 탐색: 앞 / 중간 / 끝 전부 포함
+        for _, wordList in pairs(dictionary) do
+                for _, word in ipairs(wordList) do
+                        if not seen[word] and #word >= qLen then
+                                local pos = word:find(query, 1, true)
+                                if pos then
+                                        seen[word] = true
+                                        local isAtk = attackSet[word] == true
+                                        -- 위치 우선순위: 앞=1 중간=2 끝=3
+                                        local posPri
+                                        if pos == 1 then posPri = 1
+                                        elseif pos + qLen - 1 == #word then posPri = 3
+                                        else posPri = 2
+                                        end
+                                        -- 유형 우선순위: 한방=1, 긴단어(>=5글자)=2, 노멀=3
+                                        local wLen = utf8.len(word)
+                                        local typePri = isAtk and 1 or (wLen >= 5 and 2 or 3)
+                                        table.insert(raw, {
+                                                word      = word,
+                                                query     = query,
+                                                isAttack  = isAtk,
+                                                len       = wLen,
+                                                posPri    = posPri,
+                                                typePri   = typePri,
+                                        })
+                                end
+                        end
+                end
+        end
 
-	-- 모든 단어 탐색: 앞 / 중간 / 끝 전부 포함
-	for _, wordList in pairs(dictionary) do
-		for _, word in ipairs(wordList) do
-			if not seen[word] and #word >= qLen then
-				local pos = word:find(query, 1, true)
-				if pos then
-					seen[word] = true
-					-- 정렬 우선순위: 앞=1, 중간=2, 끝=3
-					local priority
-					if pos == 1 then
-						priority = 1
-					elseif pos + qLen - 1 == #word then
-						priority = 3
-					else
-						priority = 2
-					end
-					table.insert(allResults, {
-						word     = word,
-						query    = query,
-						priority = priority,
-						len      = utf8.len(word)
-					})
-				end
-			end
-		end
-	end
+        -- 유형 필터 적용
+        local filtered = {}
+        for _, entry in ipairs(raw) do
+                local ok = false
+                if     searchType == "ALL"    then ok = true
+                elseif searchType == "ATTACK" then ok = entry.isAttack
+                elseif searchType == "LONG"   then ok = entry.len >= 5
+                elseif searchType == "NORMAL" then ok = not entry.isAttack
+                end
+                if ok then table.insert(filtered, entry) end
+        end
 
-	-- 정렬: 앞 > 중간 > 끝, 같은 우선순위면 가나다순
-	table.sort(allResults, function(a, b)
-		if a.priority ~= b.priority then
-			return a.priority < b.priority
-		end
-		return a.word < b.word
-	end)
+        -- 정렬
+        -- 전체모드: 유형(한방→긴단어→노멀) → 앞/중/끝 → 길이내림 → 가나다
+        -- 한방모드: 길이내림 → 가나다
+        -- 긴단어모드: 길이내림 → 가나다
+        -- 노멀모드: 앞/중/끝 → 가나다
+        table.sort(filtered, function(a, b)
+                if searchType == "ALL" then
+                        if a.typePri ~= b.typePri then return a.typePri < b.typePri end
+                        if a.posPri  ~= b.posPri  then return a.posPri  < b.posPri  end
+                        if a.len     ~= b.len     then return a.len     > b.len     end
+                        return a.word < b.word
+                elseif searchType == "LONG" then
+                        if a.len ~= b.len then return a.len > b.len end
+                        return a.word < b.word
+                elseif searchType == "ATTACK" then
+                        if a.len ~= b.len then return a.len > b.len end
+                        return a.word < b.word
+                else -- NORMAL
+                        if a.posPri ~= b.posPri then return a.posPri < b.posPri end
+                        return a.word < b.word
+                end
+        end)
 
-	if #allResults == 0 then
-		searchCountLbl.Text = "결과 없음"
-	else
-		searchCountLbl.Text = "총 " .. #allResults .. "개"
-	end
+        allResults = filtered
 
-	renderPage()
+        if #allResults == 0 then
+                searchCountLbl.Text = "결과 없음"
+        else
+                searchCountLbl.Text = "총 " .. #allResults .. "개"
+        end
+
+        renderAll()
 end
 
--- 더보기 클릭
-moreBtnContainer.MouseButton1Click:Connect(function()
-	renderPage()
+-- 유형 버튼 클릭 핸들러
+local function setSearchType(newType, activeBtn)
+        searchType = newType
+        for _, btn in ipairs({typeBtnAll, typeBtnAttack, typeBtnLong, typeBtnNormal}) do
+                btn.BackgroundColor3 = TYPE_IDLE_COLOR
+        end
+        activeBtn.BackgroundColor3 = TYPE_ACTIVE_COLOR
+        doSearch(searchBox.Text)
+end
+
+typeBtnAll.MouseButton1Click:Connect(function()
+        setSearchType("ALL", typeBtnAll)
+end)
+typeBtnAttack.MouseButton1Click:Connect(function()
+        setSearchType("ATTACK", typeBtnAttack)
+end)
+typeBtnLong.MouseButton1Click:Connect(function()
+        setSearchType("LONG", typeBtnLong)
+end)
+typeBtnNormal.MouseButton1Click:Connect(function()
+        setSearchType("NORMAL", typeBtnNormal)
 end)
 
 -- 입력창 변경 감지
 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-	doSearch(searchBox.Text)
+        doSearch(searchBox.Text)
 end)
 
 
@@ -787,45 +931,45 @@ local recentWords = {}
 local lastStartChar = nil
 
 local function isUsed(word)
-	return usedWords[word] == true
+        return usedWords[word] == true
 end
 
 local function addRecent(word)
-	table.insert(recentWords, 1, word)
-	if #recentWords > 20 then
-		table.remove(recentWords)
-	end
+        table.insert(recentWords, 1, word)
+        if #recentWords > 20 then
+                table.remove(recentWords)
+        end
 end
 
 local function wasRecent(word)
-	for _, v in ipairs(recentWords) do
-		if v == word then return true end
-	end
-	return false
+        for _, v in ipairs(recentWords) do
+                if v == word then return true end
+        end
+        return false
 end
 
 local function hasWordStarting(char)
-	for _, v in ipairs(getDuumVariants(char)) do
-		if dictionary[v] then return true end
-	end
-	return false
+        for _, v in ipairs(getDuumVariants(char)) do
+                if dictionary[v] then return true end
+        end
+        return false
 end
 
 local function shuffle(tbl)
-	for i = #tbl, 2, -1 do
-		local j = math.random(i)
-		tbl[i], tbl[j] = tbl[j], tbl[i]
-	end
+        for i = #tbl, 2, -1 do
+                local j = math.random(i)
+                tbl[i], tbl[j] = tbl[j], tbl[i]
+        end
 end
 
 local function pickOne(candidates)
-	if #candidates <= 0 then return nil end
-	shuffle(candidates)
-	local top = {}
-	for i = 1, math.min(5, #candidates) do
-		table.insert(top, candidates[i])
-	end
-	return top[math.random(1, #top)]
+        if #candidates <= 0 then return nil end
+        shuffle(candidates)
+        local top = {}
+        for i = 1, math.min(5, #candidates) do
+                table.insert(top, candidates[i])
+        end
+        return top[math.random(1, #top)]
 end
 
 
@@ -834,23 +978,27 @@ end
 -- 한방
 
 local function findBestWord(startChar)
-	local candidates = {}
-	for _, variant in ipairs(getDuumVariants(startChar)) do
-		local list = dictionary[variant]
-		if list then
-			for _, word in ipairs(list) do
-				local last = lastChar(word)
-				if not hasWordStarting(last)
-					and not isUsed(word)
-					and not wasRecent(word) then
-					table.insert(candidates, word)
-				end
-			end
-		end
-	end
-	local selected = pickOne(candidates)
-	if selected then addRecent(selected) end
-	return selected
+        -- getDuumVariants 순서대로 시도, 한방단어 후보 나오면 그 변형에서만 픽
+        for _, variant in ipairs(getDuumVariants(startChar)) do
+                local list = dictionary[variant]
+                if list then
+                        local candidates = {}
+                        for _, word in ipairs(list) do
+                                local last = lastChar(word)
+                                if not hasWordStarting(last)
+                                        and not isUsed(word)
+                                        and not wasRecent(word) then
+                                        table.insert(candidates, word)
+                                end
+                        end
+                        if #candidates > 0 then
+                                local selected = pickOne(candidates)
+                                if selected then addRecent(selected) end
+                                return selected
+                        end
+                end
+        end
+        return nil
 end
 
 
@@ -859,30 +1007,39 @@ end
 -- 노멀
 
 local function findNormalWord(startChar)
-	local attackCandidates = {}
-	local normalCandidates = {}
-	for _, variant in ipairs(getDuumVariants(startChar)) do
-		local alist = attackDictionary[variant]
-		if alist then
-			for _, word in ipairs(alist) do
-				if not isUsed(word) and not wasRecent(word) then
-					table.insert(attackCandidates, word)
-				end
-			end
-		end
-		local dlist = dictionary[variant]
-		if dlist then
-			for _, word in ipairs(dlist) do
-				if not isUsed(word) and not wasRecent(word) then
-					table.insert(normalCandidates, word)
-				end
-			end
-		end
-	end
-	local pool = (#attackCandidates > 0) and attackCandidates or normalCandidates
-	local selected = pickOne(pool)
-	if selected then addRecent(selected) end
-	return selected
+        -- ㅇ→ㄴ→ㄹ 순서로 시도
+        -- 각 변형에서 공격단어 있으면 공격단어만, 없으면 일반단어
+        -- 후보 나오면 그 변형에서 픽하고 종료
+        for _, variant in ipairs(getDuumVariants(startChar)) do
+                local attackCandidates = {}
+                local normalCandidates = {}
+
+                local alist = attackDictionary[variant]
+                if alist then
+                        for _, word in ipairs(alist) do
+                                if not isUsed(word) and not wasRecent(word) then
+                                        table.insert(attackCandidates, word)
+                                end
+                        end
+                end
+
+                local dlist = dictionary[variant]
+                if dlist then
+                        for _, word in ipairs(dlist) do
+                                if not isUsed(word) and not wasRecent(word) then
+                                        table.insert(normalCandidates, word)
+                                end
+                        end
+                end
+
+                local pool = (#attackCandidates > 0) and attackCandidates or normalCandidates
+                if #pool > 0 then
+                        local selected = pickOne(pool)
+                        if selected then addRecent(selected) end
+                        return selected
+                end
+        end
+        return nil
 end
 
 
@@ -891,25 +1048,29 @@ end
 -- 긴단어
 
 local function findLongestWord(startChar)
-	local ranked = {}
-	for _, variant in ipairs(getDuumVariants(startChar)) do
-		local list = dictionary[variant]
-		if list then
-			for _, word in ipairs(list) do
-				if not isUsed(word) and not wasRecent(word) then
-					table.insert(ranked, {word = word, len = utf8.len(word)})
-				end
-			end
-		end
-	end
-	table.sort(ranked, function(a, b) return a.len > b.len end)
-	local candidates = {}
-	for i = 1, math.min(5, #ranked) do
-		table.insert(candidates, ranked[i].word)
-	end
-	local selected = pickOne(candidates)
-	if selected then addRecent(selected) end
-	return selected
+        -- ㅇ→ㄴ→ㄹ 순서로 시도, 후보 나오면 그 변형에서 가장 긴 단어 픽
+        for _, variant in ipairs(getDuumVariants(startChar)) do
+                local list = dictionary[variant]
+                if list then
+                        local ranked = {}
+                        for _, word in ipairs(list) do
+                                if not isUsed(word) and not wasRecent(word) then
+                                        table.insert(ranked, {word = word, len = utf8.len(word)})
+                                end
+                        end
+                        if #ranked > 0 then
+                                table.sort(ranked, function(a, b) return a.len > b.len end)
+                                local candidates = {}
+                                for i = 1, math.min(5, #ranked) do
+                                        table.insert(candidates, ranked[i].word)
+                                end
+                                local selected = pickOne(candidates)
+                                if selected then addRecent(selected) end
+                                return selected
+                        end
+                end
+        end
+        return nil
 end
 
 
@@ -918,13 +1079,13 @@ end
 -- 생성
 
 local function generateWord(startChar)
-	if mode == "ONE" then
-		return findBestWord(startChar)
-	elseif mode == "LONG" then
-		return findLongestWord(startChar)
-	else
-		return findNormalWord(startChar)
-	end
+        if mode == "ONE" then
+                return findBestWord(startChar)
+        elseif mode == "LONG" then
+                return findLongestWord(startChar)
+        else
+                return findNormalWord(startChar)
+        end
 end
 
 
@@ -933,33 +1094,33 @@ end
 -- 타이핑
 
 local function typingEffect(word)
-	local current = ""
-	for _, code in utf8.codes(word) do
-		local char = utf8.char(code)
-		if inputMode == "MOBILE" then
-			ReplicatedStorage
-				:WaitForChild("Remotes")
-				:WaitForChild("TypingWord")
-				:FireServer(current .. getCho(char))
-			task.wait(
-				math.random(
-					currentSpeed.Delay[1] * 1000,
-					currentSpeed.Delay[2] * 1000
-				) / 1000
-			)
-		end
-		current = current .. char
-		ReplicatedStorage
-			:WaitForChild("Remotes")
-			:WaitForChild("TypingWord")
-			:FireServer(current)
-		task.wait(
-			math.random(
-				currentSpeed.Delay[1] * 1000,
-				currentSpeed.Delay[2] * 1000
-			) / 1000
-		)
-	end
+        local current = ""
+        for _, code in utf8.codes(word) do
+                local char = utf8.char(code)
+                if inputMode == "MOBILE" then
+                        ReplicatedStorage
+                                :WaitForChild("Remotes")
+                                :WaitForChild("TypingWord")
+                                :FireServer(current .. getCho(char))
+                        task.wait(
+                                math.random(
+                                        currentSpeed.Delay[1] * 1000,
+                                        currentSpeed.Delay[2] * 1000
+                                ) / 1000
+                        )
+                end
+                current = current .. char
+                ReplicatedStorage
+                        :WaitForChild("Remotes")
+                        :WaitForChild("TypingWord")
+                        :FireServer(current)
+                task.wait(
+                        math.random(
+                                currentSpeed.Delay[1] * 1000,
+                                currentSpeed.Delay[2] * 1000
+                        ) / 1000
+                )
+        end
 end
 
 
@@ -968,15 +1129,15 @@ end
 -- 제출
 
 local function submitWord(word)
-	status.Text = "입력중: " .. word
-	typingEffect(word)
-	task.wait(0.1)
-	status.Text = "전송: " .. word
-	ReplicatedStorage
-		:WaitForChild("Remotes")
-		:WaitForChild("SumbitWord")
-		:FireServer(word)
-	usedWords[word] = true
+        status.Text = "입력중: " .. word
+        typingEffect(word)
+        task.wait(0.1)
+        status.Text = "전송: " .. word
+        ReplicatedStorage
+                :WaitForChild("Remotes")
+                :WaitForChild("SumbitWord")
+                :FireServer(word)
+        usedWords[word] = true
 end
 
 
@@ -985,35 +1146,35 @@ end
 -- 자동입력
 
 button.MouseButton1Click:Connect(function()
-	local success, err = pcall(function()
-		local label =
-			player.PlayerGui
-			.GameGui
-			.TriesFrame
-			.SpectatorTipLabel
+        local success, err = pcall(function()
+                local label =
+                        player.PlayerGui
+                        .GameGui
+                        .TriesFrame
+                        .SpectatorTipLabel
 
-		local text = label.Text
-		local char = text:match("'(.-)'")
+                local text = label.Text
+                local char = text:match("'(.-)'")
 
-		if not char then
-			status.Text = "글자 감지 실패"
-			return
-		end
+                if not char then
+                        status.Text = "글자 감지 실패"
+                        return
+                end
 
-		lastStartChar = char
-		local word = generateWord(char)
+                lastStartChar = char
+                local word = generateWord(char)
 
-		if word then
-			submitWord(word)
-		else
-			status.Text = "단어 없음"
-		end
-	end)
+                if word then
+                        submitWord(word)
+                else
+                        status.Text = "단어 없음"
+                end
+        end)
 
-	if not success then
-		status.Text = "오류 발생"
-		warn(err)
-	end
+        if not success then
+                status.Text = "오류 발생"
+                warn(err)
+        end
 end)
 
 
@@ -1022,16 +1183,16 @@ end)
 -- 재생성
 
 rerollBtn.MouseButton1Click:Connect(function()
-	if not lastStartChar then
-		status.Text = "이전 글자 없음"
-		return
-	end
-	local word = generateWord(lastStartChar)
-	if word then
-		submitWord(word)
-	else
-		status.Text = "재생성 실패"
-	end
+        if not lastStartChar then
+                status.Text = "이전 글자 없음"
+                return
+        end
+        local word = generateWord(lastStartChar)
+        if word then
+                submitWord(word)
+        else
+                status.Text = "재생성 실패"
+        end
 end)
 
 
@@ -1040,7 +1201,7 @@ end)
 -- 리셋
 
 resetBtn.MouseButton1Click:Connect(function()
-	usedWords = {}
-	recentWords = {}
-	status.Text = "초기화 완료"
+        usedWords = {}
+        recentWords = {}
+        status.Text = "초기화 완료"
 end)
