@@ -733,6 +733,9 @@ local function getDuumVariants(startChar)
                         add(11) -- ㅇ 변형 (유, 윰, 율 등)
                         add(2)  -- ㄴ 변형 (뉴, 늄, 눌 등)
                         add(5)  -- ㄹ 원본 최후 fallback
+                elseif jungIdx == 5 then
+                        -- ㅔ(레→네 X): 두음법칙 미적용, ㄹ 원본만
+                        add(5)
                 else
                         -- 라→나, 래→내, 로→노, 루→누, 르→느, 뢰→뇌 등
                         add(2)  -- ㄴ 변형 우선
@@ -988,18 +991,30 @@ end
 
 local function clearResults()
         for _, child in ipairs(resultsFrame:GetChildren()) do
-                if child:IsA("TextLabel") then child:Destroy() end
+                if child:IsA("TextLabel") or child:IsA("TextButton")
+                        or child:IsA("Frame") then
+                        child:Destroy()
+                end
         end
 end
 
--- 전체 결과를 한 번에 렌더 (페이지 없음, 스크롤로 전부 볼 수 있음)
-local function renderAll()
-        clearResults()
-        for i, entry in ipairs(allResults) do
-                makeResultRow(entry, i)
-        end
+local function updateCanvasSize()
         local contentH = resultsLayout.AbsoluteContentSize.Y + 6
         resultsFrame.CanvasSize = UDim2.new(0, 0, 0, contentH)
+end
+
+local function renderRows(startIdx, endIdx)
+        for i = startIdx, endIdx do
+                makeResultRow(allResults[i], i)
+        end
+        updateCanvasSize()
+end
+
+
+-- 전체 결과 렌더 (스크롤로 전부 볼 수 있음)
+local function renderAll()
+        clearResults()
+        renderRows(1, #allResults)
         resultsFrame.CanvasPosition = Vector2.new(0, 0)
 end
 
@@ -1026,8 +1041,8 @@ local function doSearch(query)
         local raw  = {}
 
         -- 모든 단어 탐색: 앞 / 중간 / 끝 전부 포함
-        -- 모바일 부담 완화: raw 최대 400개 수집 후 중단
-        local RAW_CAP = 400
+        -- 한방모드는 전체 스캔, 나머지는 523개 제한
+        local RAW_CAP = math.huge
         local rawFull = false
         for _, wordList in pairs(dictionary) do
                 if rawFull then break end
@@ -1050,6 +1065,7 @@ local function doSearch(query)
                                                 word      = word,
                                                 query     = query,
                                                 isAttack  = isAtk,
+                                                isKill    = not hasWordStarting(lastChar(word)),
                                                 len       = wLen,
                                                 posPri    = posPri,
                                                 typePri   = typePri,
@@ -1068,7 +1084,7 @@ local function doSearch(query)
         for _, entry in ipairs(raw) do
                 local ok = false
                 if     searchType == "ALL"    then ok = true
-                elseif searchType == "ATTACK" then ok = entry.typePri <= 2   -- 필수공격 + 공격단어
+                elseif searchType == "ATTACK" then ok = entry.isKill        -- 즉사(한방)단어만
                 elseif searchType == "LONG"   then ok = entry.len >= 5
                 elseif searchType == "NORMAL" then ok = entry.typePri >= 3   -- 방어 + 일반
                 end
@@ -1090,6 +1106,7 @@ local function doSearch(query)
                         if a.len ~= b.len then return a.len > b.len end
                         return a.word < b.word
                 elseif searchType == "ATTACK" then
+                        if a.typePri ~= b.typePri then return a.typePri < b.typePri end
                         if a.len ~= b.len then return a.len > b.len end
                         return a.word < b.word
                 else -- NORMAL
