@@ -29,8 +29,8 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = CoreGui
 
 -- searchVisible 상태에 따라 frame 높이 전환
-local FRAME_H_CLOSED = 350
-local FRAME_H_OPEN   = 530
+local FRAME_H_CLOSED = 285
+local FRAME_H_OPEN   = 585
 local searchVisible = false
 
 local frame = Instance.new("Frame")
@@ -345,13 +345,15 @@ local pcBtn = makeButton(
 )
 
 
+
+
 ---
 
 -- 사전검색 컨테이너 (햄버거로 토글)
 
 local searchContainer = Instance.new("Frame")
-searchContainer.Size = UDim2.new(1, 0, 0, FRAME_H_OPEN - 230)
-searchContainer.Position = UDim2.new(0, 0, 0, 225)
+searchContainer.Size = UDim2.new(1, 0, 0, FRAME_H_OPEN - 285)
+searchContainer.Position = UDim2.new(0, 0, 0, 282)
 searchContainer.BackgroundTransparency = 1
 searchContainer.Visible = false
 searchContainer.ZIndex = 2
@@ -497,12 +499,12 @@ resultsPad.Parent = resultsFrame
 
 local button = makeButton(
         "자동 입력",
-        UDim2.new(1, -20, 0, 40),
-        UDim2.new(0, 10, 1, -50),
+        UDim2.new(1, -20, 0, 48),
+        UDim2.new(0, 10, 0, 228),
         Color3.fromRGB(60, 180, 100),
         frame
 )
-button.TextSize = 17
+button.TextSize = 18
 
 local rerollBtn = makeButton(
         "재생성",
@@ -669,7 +671,7 @@ end
 -- ㄴ→ㅇ, ㄹ→ㅇ 를 유발하는 중성 인덱스
 local N_TO_O = {[2]=true,[3]=true,[6]=true,[7]=true,[12]=true,[17]=true,[20]=true}
 -- ㄹ→ㅇ 를 유발하는 중성 인덱스 (N_TO_O + ㅟ(16))
-local R_TO_O = {[2]=true,[3]=true,[6]=true,[7]=true,[12]=true,[16]=true,[17]=true,[20]=true}
+local R_TO_O = {[2]=true,[3]=true,[4]=true,[6]=true,[7]=true,[12]=true,[16]=true,[17]=true,[20]=true}
 
 local function getChoIndex(char)
         local code = utf8.codepoint(char)
@@ -728,11 +730,10 @@ local function getDuumVariants(startChar)
 
         elseif choIdx == 5 then -- ㄹ 계열
                 if R_TO_O[jungIdx] then
-                        -- 랴→야, 려→여, 료→요, 류→유, 리→이, 뤼→위 등
-                        -- ㄴ 중간단계도 인정(뉴/늄 계열): 순서 ㅇ→ㄴ→ㄹ
+                        -- 랴→야, 려→여, 럿→엇, 료→요, 류→유, 리→이, 뤼→위, 륨→윰 등
+                        -- ㄴ변형 X: 표준 두음법칙은 ㄹ→ㅇ만 (넛·늄 등 생성 안 함)
                         add(11) -- ㅇ 변형 (유, 윰, 율 등)
-                        add(2)  -- ㄴ 변형 (뉴, 늄, 눌 등)
-                        add(5)  -- ㄹ 원본 최후 fallback
+                        add(5)  -- ㄹ 원본 fallback
                 elseif jungIdx == 5 then
                         -- ㅔ(레→네 X): 두음법칙 미적용, ㄹ 원본만
                         add(5)
@@ -1207,18 +1208,33 @@ end
 local function findByScore(startChar, filterFn, topN)
         topN = topN or 3
         local candidates = {}
-        for _, variant in ipairs(getDuumVariants(startChar)) do
-                local list = dictionary[variant]
-                if list then
-                        for _, word in ipairs(list) do
-                                if not isUsed(word) and not wasRecent(word) then
-                                        if not filterFn or filterFn(word) then
-                                                table.insert(candidates, word)
-                                        end
+        local seenW = {}
+
+        local function tryList(list)
+                if not list then return end
+                for _, word in ipairs(list) do
+                        if not seenW[word] and not isUsed(word) and not wasRecent(word) then
+                                seenW[word] = true
+                                if not filterFn or filterFn(word) then
+                                        table.insert(candidates, word)
                                 end
                         end
                 end
         end
+
+        -- 1순위: 게임이 제시한 정확한 글자로 시작하는 단어
+        --        (두음법칙 미적용 게임에서 변형 단어를 제출하면 거부됨)
+        tryList(dictionary[startChar])
+
+        -- 2순위: 정확한 글자 후보가 없을 때만 두음법칙 변형 fallback
+        if #candidates == 0 then
+                for _, variant in ipairs(getDuumVariants(startChar)) do
+                        if variant ~= startChar then
+                                tryList(dictionary[variant])
+                        end
+                end
+        end
+
         if #candidates == 0 then return nil end
         table.sort(candidates, function(a, b)
                 return (wordScore[a] or 0) > (wordScore[b] or 0)
@@ -1266,14 +1282,25 @@ end
 
 local function findLongestWord(startChar)
         -- 길이 우선, 동점이면 점수 높은 순
+        -- 정확한 글자 우선, 없으면 두음법칙 변형 fallback
         local candidates = {}
-        for _, variant in ipairs(getDuumVariants(startChar)) do
-                local list = dictionary[variant]
-                if list then
-                        for _, word in ipairs(list) do
-                                if not isUsed(word) and not wasRecent(word) then
-                                        table.insert(candidates, word)
-                                end
+        local seenW = {}
+
+        local function tryList(list)
+                if not list then return end
+                for _, word in ipairs(list) do
+                        if not seenW[word] and not isUsed(word) and not wasRecent(word) then
+                                seenW[word] = true
+                                table.insert(candidates, word)
+                        end
+                end
+        end
+
+        tryList(dictionary[startChar])
+        if #candidates == 0 then
+                for _, variant in ipairs(getDuumVariants(startChar)) do
+                        if variant ~= startChar then
+                                tryList(dictionary[variant])
                         end
                 end
         end
@@ -1421,4 +1448,6 @@ resetBtn.MouseButton1Click:Connect(function()
         status.Text = "초기화 완료"
 end)
 
+
 end -- startBot
+
