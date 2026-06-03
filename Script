@@ -305,20 +305,17 @@ bgStatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 bgStatusLbl.ZIndex = 16
 bgStatusLbl.Parent = bgPopup
 
-local BG_JSON = "끝말봇_bg.json"
-local BG_IMG  = "끝말봇_bg.png"
+local BG_JSON    = "끝말봇_bg.json"
+local bgImgCount = 0
 
 local function applyBg(url)
         bgStatusLbl.TextColor3 = Color3.fromRGB(200,160,60)
         bgStatusLbl.Text = "다운로드 중..."
+        bgImgCount = bgImgCount + 1
+        local fname = "끝말봇_bg_" .. bgImgCount .. ".png"
         local ok = pcall(function()
-                -- 캐시 무효화: Image 초기화 → 파일 삭제 → 재작성
-                bgImage.Image = ""
-                task.wait(0.05)
-                pcall(function() delfile(BG_IMG) end)
-                local data = game:HttpGet(url)
-                writefile(BG_IMG, data)
-                bgImage.Image = getcustomasset(BG_IMG)
+                writefile(fname, game:HttpGet(url))
+                bgImage.Image = getcustomasset(fname)
                 bgImage.Visible = true
                 writefile(BG_JSON, '{"url":"' .. url:gsub('"','\'') .. '"}')
         end)
@@ -362,8 +359,10 @@ pcall(function()
                 local raw = readfile(BG_JSON)
                 local url = raw:match('"url"%s*:%s*"(.-)"')
                 if url and url ~= "" then
-                        writefile(BG_IMG, game:HttpGet(url))
-                        bgImage.Image = getcustomasset(BG_IMG)
+                        bgImgCount = bgImgCount + 1
+                        local fname = "끝말봇_bg_" .. bgImgCount .. ".png"
+                        writefile(fname, game:HttpGet(url))
+                        bgImage.Image = getcustomasset(fname)
                         bgImage.Visible = true
                 end
         end
