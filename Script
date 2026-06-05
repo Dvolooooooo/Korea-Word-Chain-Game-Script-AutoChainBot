@@ -1,5 +1,5 @@
 -- 끝말잇기 자동봇 FINAL ULTIMATE
--- 드래그 / 모바일 / 재생성 / 공격단어 fallback / 스마트 두음법칙 / 사전검색 전부 포함
+-- 드래그 / 모바일 / 재생성 / 공격단어 fallback / 스마트 두음법칙 / 사전검색 / 미니맥스 전부 포함
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,25 +28,23 @@ gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = CoreGui
 
--- searchVisible 상태에 따라 frame 높이 전환
-local FRAME_H_CLOSED = 340
-local FRAME_H_OPEN   = 640
+local FRAME_H_CLOSED = 375
+local FRAME_H_OPEN   = 675
 local searchVisible = false
 local maxRoute = 2
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 260, 0, FRAME_H_CLOSED)
-frame.Position = UDim2.new(0.5, -130, 0.5, -175)
+frame.Position = UDim2.new(0.5, -130, 0.5, -187)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Selectable = true
 frame.Parent = gui
-frame.Visible = false   -- 인트로가 닫혀야 표시
+frame.Visible = false
 
 Instance.new("UICorner", frame)
 
--- 배경 이미지 레이어 (ZIndex 1, 모든 컨텐츠 뒤)
 local bgImage = Instance.new("ImageLabel")
 bgImage.Size = UDim2.new(1, 0, 1, 0)
 bgImage.Position = UDim2.new(0, 0, 0, 0)
@@ -93,7 +91,7 @@ local introSub = Instance.new("TextLabel")
 introSub.Size = UDim2.new(1, -20, 0, 18)
 introSub.Position = UDim2.new(0, 10, 0, 72)
 introSub.BackgroundTransparency = 1
-introSub.Text = "자동봇 · 유도단어 · 사전검색 · 두음법칙"
+introSub.Text = "자동봇 · 유도단어 · 사전검색 · 두음법칙 · 미니맥스"
 introSub.Font = Enum.Font.Code
 introSub.TextSize = 11
 introSub.TextColor3 = Color3.fromRGB(140, 150, 190)
@@ -125,10 +123,8 @@ introNotice.TextWrapped = true
 introNotice.ZIndex = 21
 introNotice.Parent = introFrame
 
--- startBot 전방 선언 (정의는 아래쪽, 클릭 핸들러보다 먼저 선언 필요)
 local startBot
 
--- 실행하기 → 인트로 닫고 봇 시작
 startBtn.MouseButton1Click:Connect(function()
         startBtn.Text = "로딩중..."
         startBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -237,70 +233,70 @@ bgPopup.ZIndex = 15
 bgPopup.Visible = false
 bgPopup.Parent = frame
 Instance.new("UICorner", bgPopup)
-do local s=Instance.new("UIStroke",bgPopup); s.Color=Color3.fromRGB(70,110,200); s.Thickness=1 end
+do local s = Instance.new("UIStroke", bgPopup); s.Color = Color3.fromRGB(70, 110, 200); s.Thickness = 1 end
 
 local bgTitleLbl = Instance.new("TextLabel")
-bgTitleLbl.Size = UDim2.new(1,-10,0,20)
-bgTitleLbl.Position = UDim2.new(0,6,0,5)
+bgTitleLbl.Size = UDim2.new(1, -10, 0, 20)
+bgTitleLbl.Position = UDim2.new(0, 6, 0, 5)
 bgTitleLbl.BackgroundTransparency = 1
 bgTitleLbl.Text = "배경 이미지 URL"
 bgTitleLbl.Font = Enum.Font.GothamBold
 bgTitleLbl.TextSize = 12
-bgTitleLbl.TextColor3 = Color3.fromRGB(160,190,255)
+bgTitleLbl.TextColor3 = Color3.fromRGB(160, 190, 255)
 bgTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
 bgTitleLbl.ZIndex = 16
 bgTitleLbl.Parent = bgPopup
 
 local bgUrlBox = Instance.new("TextBox")
-bgUrlBox.Size = UDim2.new(1,-14,0,28)
-bgUrlBox.Position = UDim2.new(0,7,0,28)
-bgUrlBox.BackgroundColor3 = Color3.fromRGB(38,38,52)
+bgUrlBox.Size = UDim2.new(1, -14, 0, 28)
+bgUrlBox.Position = UDim2.new(0, 7, 0, 28)
+bgUrlBox.BackgroundColor3 = Color3.fromRGB(38, 38, 52)
 bgUrlBox.BorderSizePixel = 0
 bgUrlBox.Text = ""
 bgUrlBox.PlaceholderText = "https://i.imgur.com/..."
 bgUrlBox.Font = Enum.Font.Code
 bgUrlBox.TextSize = 11
-bgUrlBox.TextColor3 = Color3.new(1,1,1)
-bgUrlBox.PlaceholderColor3 = Color3.fromRGB(100,100,120)
+bgUrlBox.TextColor3 = Color3.new(1, 1, 1)
+bgUrlBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
 bgUrlBox.ClearTextOnFocus = false
 bgUrlBox.ZIndex = 16
 bgUrlBox.Parent = bgPopup
 Instance.new("UICorner", bgUrlBox)
 
 local bgApplyBtn = Instance.new("TextButton")
-bgApplyBtn.Size = UDim2.new(0,106,0,26)
-bgApplyBtn.Position = UDim2.new(0,7,0,62)
-bgApplyBtn.BackgroundColor3 = Color3.fromRGB(45,145,85)
+bgApplyBtn.Size = UDim2.new(0, 106, 0, 26)
+bgApplyBtn.Position = UDim2.new(0, 7, 0, 62)
+bgApplyBtn.BackgroundColor3 = Color3.fromRGB(45, 145, 85)
 bgApplyBtn.Text = "적용"
 bgApplyBtn.Font = Enum.Font.GothamBold
 bgApplyBtn.TextSize = 13
-bgApplyBtn.TextColor3 = Color3.new(1,1,1)
+bgApplyBtn.TextColor3 = Color3.new(1, 1, 1)
 bgApplyBtn.AutoButtonColor = true
 bgApplyBtn.ZIndex = 16
 bgApplyBtn.Parent = bgPopup
 Instance.new("UICorner", bgApplyBtn)
 
 local bgClearBtn = Instance.new("TextButton")
-bgClearBtn.Size = UDim2.new(0,106,0,26)
-bgClearBtn.Position = UDim2.new(1,-117,0,62)
-bgClearBtn.BackgroundColor3 = Color3.fromRGB(140,50,50)
+bgClearBtn.Size = UDim2.new(0, 106, 0, 26)
+bgClearBtn.Position = UDim2.new(1, -117, 0, 62)
+bgClearBtn.BackgroundColor3 = Color3.fromRGB(140, 50, 50)
 bgClearBtn.Text = "배경 제거"
 bgClearBtn.Font = Enum.Font.GothamBold
 bgClearBtn.TextSize = 12
-bgClearBtn.TextColor3 = Color3.new(1,1,1)
+bgClearBtn.TextColor3 = Color3.new(1, 1, 1)
 bgClearBtn.AutoButtonColor = true
 bgClearBtn.ZIndex = 16
 bgClearBtn.Parent = bgPopup
 Instance.new("UICorner", bgClearBtn)
 
 local bgStatusLbl = Instance.new("TextLabel")
-bgStatusLbl.Size = UDim2.new(1,-14,0,14)
-bgStatusLbl.Position = UDim2.new(0,7,0,92)
+bgStatusLbl.Size = UDim2.new(1, -14, 0, 14)
+bgStatusLbl.Position = UDim2.new(0, 7, 0, 92)
 bgStatusLbl.BackgroundTransparency = 1
 bgStatusLbl.Text = ""
 bgStatusLbl.Font = Enum.Font.Code
 bgStatusLbl.TextSize = 10
-bgStatusLbl.TextColor3 = Color3.fromRGB(200,160,60)
+bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
 bgStatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 bgStatusLbl.ZIndex = 16
 bgStatusLbl.Parent = bgPopup
@@ -309,7 +305,7 @@ local BG_JSON    = "끝말봇_bg.json"
 local bgImgCount = 0
 
 local function applyBg(url)
-        bgStatusLbl.TextColor3 = Color3.fromRGB(200,160,60)
+        bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
         bgStatusLbl.Text = "다운로드 중..."
         bgImgCount = bgImgCount + 1
         local fname = "끝말봇_bg_" .. bgImgCount .. ".png"
@@ -317,13 +313,13 @@ local function applyBg(url)
                 writefile(fname, game:HttpGet(url))
                 bgImage.Image = getcustomasset(fname)
                 bgImage.Visible = true
-                writefile(BG_JSON, '{"url":"' .. url:gsub('"','\'') .. '"}')
+                writefile(BG_JSON, '{"url":"' .. url:gsub('"', "'") .. '"}')
         end)
         if ok then
-                bgStatusLbl.TextColor3 = Color3.fromRGB(70,220,110)
+                bgStatusLbl.TextColor3 = Color3.fromRGB(70, 220, 110)
                 bgStatusLbl.Text = "v 적용 완료"
         else
-                bgStatusLbl.TextColor3 = Color3.fromRGB(230,70,70)
+                bgStatusLbl.TextColor3 = Color3.fromRGB(230, 70, 70)
                 bgStatusLbl.Text = "x 실패 — URL 확인 필요"
         end
 end
@@ -338,7 +334,7 @@ end)
 bgApplyBtn.MouseButton1Click:Connect(function()
         local url = bgUrlBox.Text:match("^%s*(.-)%s*$")
         if url == "" then
-                bgStatusLbl.TextColor3 = Color3.fromRGB(230,70,70)
+                bgStatusLbl.TextColor3 = Color3.fromRGB(230, 70, 70)
                 bgStatusLbl.Text = "URL을 입력해주세요"
                 return
         end
@@ -349,11 +345,10 @@ bgClearBtn.MouseButton1Click:Connect(function()
         bgImage.Visible = false
         bgImage.Image = ""
         pcall(function() writefile(BG_JSON, '{"url":""}') end)
-        bgStatusLbl.TextColor3 = Color3.fromRGB(200,160,60)
+        bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
         bgStatusLbl.Text = "배경 제거됨"
 end)
 
--- 이전에 저장한 배경 자동 복원
 pcall(function()
         if isfile(BG_JSON) then
                 local raw = readfile(BG_JSON)
@@ -384,7 +379,6 @@ title.TextColor3 = Color3.new(1, 1, 1)
 title.ZIndex = 2
 title.Parent = frame
 
--- 햄버거(☰) 버튼 - 검색창 토글
 local hamburgerBtn = Instance.new("TextButton")
 hamburgerBtn.Size = UDim2.new(0, 36, 0, 26)
 hamburgerBtn.Position = UDim2.new(1, -42, 0, 4)
@@ -564,17 +558,45 @@ routeWarn.Parent = frame
 
 ---
 
--- 사전검색 컨테이너 (햄버거로 토글)
+-- 미니맥스 토글 버튼
+
+local useMinimax = false
+
+local minimaxBtn = makeButton(
+        "미니맥스 OFF",
+        UDim2.new(1, -20, 0, 25),
+        UDim2.new(0, 10, 0, 283),
+        Color3.fromRGB(70, 70, 100),
+        frame
+)
+minimaxBtn.TextSize = 13
+
+minimaxBtn.MouseButton1Click:Connect(function()
+        useMinimax = not useMinimax
+        if useMinimax then
+                minimaxBtn.BackgroundColor3 = Color3.fromRGB(120, 60, 200)
+                minimaxBtn.Text = "미니맥스 ON  (상대예측 활성)"
+                status.Text = "미니맥스 활성화 — 상대 응수 예측"
+        else
+                minimaxBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
+                minimaxBtn.Text = "미니맥스 OFF"
+                status.Text = "미니맥스 비활성화"
+        end
+end)
+
+
+---
+
+-- 사전검색 컨테이너
 
 local searchContainer = Instance.new("Frame")
-searchContainer.Size = UDim2.new(1, 0, 0, FRAME_H_OPEN - 340)
-searchContainer.Position = UDim2.new(0, 0, 0, 336)
+searchContainer.Size = UDim2.new(1, 0, 0, FRAME_H_OPEN - FRAME_H_CLOSED)
+searchContainer.Position = UDim2.new(0, 0, 0, FRAME_H_CLOSED - 1)
 searchContainer.BackgroundTransparency = 1
 searchContainer.Visible = false
 searchContainer.ZIndex = 2
 searchContainer.Parent = frame
 
--- "사전검색" 라벨
 local searchTitleLbl = Instance.new("TextLabel")
 searchTitleLbl.Size = UDim2.new(1, -10, 0, 18)
 searchTitleLbl.Position = UDim2.new(0, 5, 0, 0)
@@ -587,7 +609,6 @@ searchTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
 searchTitleLbl.ZIndex = 3
 searchTitleLbl.Parent = searchContainer
 
--- 입력창
 local searchBox = Instance.new("TextBox")
 searchBox.Size = UDim2.new(1, -20, 0, 26)
 searchBox.Position = UDim2.new(0, 10, 0, 21)
@@ -604,7 +625,6 @@ searchBox.ZIndex = 4
 searchBox.Parent = searchContainer
 Instance.new("UICorner", searchBox)
 
--- 현재 쿼리 뱃지 (파란 네모박스)
 local queryBadge = Instance.new("Frame")
 queryBadge.Size = UDim2.new(0, 60, 0, 20)
 queryBadge.Position = UDim2.new(0, 10, 0, 51)
@@ -627,7 +647,6 @@ queryBadgeText.TextXAlignment = Enum.TextXAlignment.Left
 queryBadgeText.ZIndex = 4
 queryBadgeText.Parent = queryBadge
 
--- 결과 수 라벨
 local searchCountLbl = Instance.new("TextLabel")
 searchCountLbl.Size = UDim2.new(1, -80, 0, 20)
 searchCountLbl.Position = UDim2.new(0, 78, 0, 51)
@@ -640,7 +659,6 @@ searchCountLbl.TextXAlignment = Enum.TextXAlignment.Left
 searchCountLbl.ZIndex = 3
 searchCountLbl.Parent = searchContainer
 
--- 유형 필터 버튼 행 (전체 / 한방 / 긴단어 / 노멀)
 local typeFilterRow = Instance.new("Frame")
 typeFilterRow.Size = UDim2.new(1, -10, 0, 24)
 typeFilterRow.Position = UDim2.new(0, 5, 0, 75)
@@ -676,12 +694,10 @@ local typeBtnAttack = makeTypeBtn("한방",   2)
 local typeBtnLong   = makeTypeBtn("긴단어", 3)
 local typeBtnNormal = makeTypeBtn("노멀",   4)
 
--- 활성 유형 강조
-local TYPE_ACTIVE_COLOR  = Color3.fromRGB(40, 100, 220)
-local TYPE_IDLE_COLOR    = Color3.fromRGB(50, 50, 65)
-typeBtnAll.BackgroundColor3 = TYPE_ACTIVE_COLOR   -- 기본값 전체
+local TYPE_ACTIVE_COLOR = Color3.fromRGB(40, 100, 220)
+local TYPE_IDLE_COLOR   = Color3.fromRGB(50, 50, 65)
+typeBtnAll.BackgroundColor3 = TYPE_ACTIVE_COLOR
 
--- 결과 스크롤프레임
 local resultsFrame = Instance.new("ScrollingFrame")
 resultsFrame.Size = UDim2.new(1, -20, 0, 192)
 resultsFrame.Position = UDim2.new(0, 10, 0, 103)
@@ -700,12 +716,11 @@ resultsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 resultsLayout.Parent = resultsFrame
 
 local resultsPad = Instance.new("UIPadding")
-resultsPad.PaddingLeft = UDim.new(0, 4)
-resultsPad.PaddingRight = UDim.new(0, 4)
-resultsPad.PaddingTop = UDim.new(0, 3)
+resultsPad.PaddingLeft   = UDim.new(0, 4)
+resultsPad.PaddingRight  = UDim.new(0, 4)
+resultsPad.PaddingTop    = UDim.new(0, 3)
 resultsPad.PaddingBottom = UDim.new(0, 3)
 resultsPad.Parent = resultsFrame
-
 
 
 ---
@@ -715,7 +730,7 @@ resultsPad.Parent = resultsFrame
 local button = makeButton(
         "자동 입력",
         UDim2.new(1, -20, 0, 48),
-        UDim2.new(0, 10, 0, 283),
+        UDim2.new(0, 10, 0, 315),
         Color3.fromRGB(60, 180, 100),
         frame
 )
@@ -865,27 +880,9 @@ end
 
 ---
 
--- 표준 두음법칙 + 신엘룰/구엘룰 확장 (초성+중성 조합 기반)
---
--- 중성 인덱스 (0-base):
---   ㅏ=0 ㅐ=1 ㅑ=2 ㅒ=3 ㅓ=4 ㅔ=5 ㅕ=6 ㅖ=7
---   ㅗ=8 ㅘ=9 ㅙ=10 ㅚ=11 ㅛ=12 ㅜ=13 ㅝ=14 ㅞ=15 ㅟ=16
---   ㅠ=17 ㅡ=18 ㅢ=19 ㅣ=20
---
--- [ㄴ 계열] 아래 중성일 때만 ㄴ→ㅇ 두음법칙 적용
---   ㅑ ㅒ ㅕ ㅖ ㅛ ㅠ ㅣ  (냐→야 녀→여 뇨→요 뉴→유 니→이 등)
--- [ㄹ 계열]
---   ㅑ ㅒ ㅕ ㅖ ㅛ ㅟ ㅠ ㅣ → ㄹ→ㅇ (랴→야 려→여 료→요 류→유 리→이 뤼→위 등)
---   나머지 모음              → ㄹ→ㄴ (라→나 래→내 로→노 루→누 르→느 등)
---
--- fallback 순서:
---   ㄴ계열: ㅇ 변형 → ㄴ 원본
---   ㄹ(ㅇ변환 모음): ㅇ → ㄴ → ㄹ  (윰→늄→륨 순서)
---   ㄹ(ㄴ변환 모음): ㄴ → ㄹ        (노→로 순서)
+-- 두음법칙
 
--- ㄴ→ㅇ, ㄹ→ㅇ 를 유발하는 중성 인덱스
 local N_TO_O = {[2]=true,[3]=true,[6]=true,[7]=true,[12]=true,[17]=true,[20]=true}
--- ㄹ→ㅇ 를 유발하는 중성 인덱스 (N_TO_O + ㅟ(16))
 local R_TO_O = {[2]=true,[3]=true,[4]=true,[6]=true,[7]=true,[12]=true,[16]=true,[17]=true,[20]=true}
 
 local function getChoIndex(char)
@@ -913,8 +910,6 @@ local function replaceChoPart(char, newChoIdx)
         return char
 end
 
--- 주어진 글자의 두음법칙 변형 목록을 fallback 순서로 반환
--- (첫 번째가 가장 우선, 마지막이 최후 fallback)
 local function getDuumVariants(startChar)
         local choIdx  = getChoIndex(startChar)
         local jungIdx = getJungIndex(startChar)
@@ -934,32 +929,25 @@ local function getDuumVariants(startChar)
                 end
         end
 
-        if choIdx == 2 then -- ㄴ 계열
+        if choIdx == 2 then
                 if N_TO_O[jungIdx] then
-                        -- 냐→야, 녀→여, 뇨→요, 뉴→유, 니→이 등
-                        add(11) -- ㅇ 변형 우선
-                        add(2)  -- ㄴ 원본 fallback
+                        add(11)
+                        add(2)
                 else
-                        add(2)  -- 두음법칙 해당 없음
+                        add(2)
                 end
-
-        elseif choIdx == 5 then -- ㄹ 계열
+        elseif choIdx == 5 then
                 if R_TO_O[jungIdx] then
-                        -- 랴→야, 려→여, 럿→엇, 료→요, 류→유, 리→이, 뤼→위, 륨→윰 등
-                        -- ㄴ변형 X: 표준 두음법칙은 ㄹ→ㅇ만 (넛·늄 등 생성 안 함)
-                        add(11) -- ㅇ 변형 (유, 윰, 율 등)
-                        add(5)  -- ㄹ 원본 fallback
+                        add(11)
+                        add(5)
                 elseif jungIdx == 5 then
-                        -- ㅔ(레→네 X): 두음법칙 미적용, ㄹ 원본만
                         add(5)
                 else
-                        -- 라→나, 래→내, 로→노, 루→누, 르→느, 뢰→뇌 등
-                        add(2)  -- ㄴ 변형 우선
-                        add(5)  -- ㄹ 원본 fallback
+                        add(2)
+                        add(5)
                 end
-
         else
-                add(choIdx) -- 두음법칙 해당 없음
+                add(choIdx)
         end
 
         return variants
@@ -970,16 +958,15 @@ end
 
 -- 사전
 
-local dictionary          = {}   -- 전체 단어 (hasWordStarting·검색용)
-local essentialDictionary = {}   -- 1순위: 필수공격
-local attackDictionary    = {}   -- 2순위: 공격단어
-local defDictionary       = {}   -- 3순위: 방어단어
-local normalDictionary    = {}   -- 4순위: 일반단어목록
-local essentialSet = {}          -- 필수공격 빠른 조회
-local attackSet    = {}          -- 공격단어 빠른 조회
-local defSet       = {}          -- 방어단어 빠른 조회
+local dictionary          = {}
+local essentialDictionary = {}
+local attackDictionary    = {}
+local defDictionary       = {}
+local normalDictionary    = {}
+local essentialSet = {}
+local attackSet    = {}
+local defSet       = {}
 
--- dictionary가 선언된 직후 정의 (점수 계산보다 반드시 먼저 와야 함)
 local function hasWordStarting(char)
         for _, v in ipairs(getDuumVariants(char)) do
                 if dictionary[v] then return true end
@@ -987,7 +974,6 @@ local function hasWordStarting(char)
         return false
 end
 
--- priority: 1=필수공격, 2=공격단어, 3=방어단어, 4=일반단어목록
 local files = {
         {name = "끄글필수공격단어.txt",  priority = 1},
         {name = "끄글 공격단어.txt",     priority = 2},
@@ -1006,216 +992,155 @@ local files = {
 
 startBot = function()
 
-local mr = tonumber(routeBox.Text)
-maxRoute = (mr and mr >= 1) and math.min(math.floor(mr), 5) or 2
-routeBox.Text = tostring(maxRoute)
+        local mr = tonumber(routeBox.Text)
+        maxRoute = (mr and mr >= 1) and math.min(math.floor(mr), 5) or 2
+        routeBox.Text = tostring(maxRoute)
 
-local total = 0
+        local total = 0
 
-for _, data in ipairs(files) do
-        local filename = data.name
-        if isfile(filename) then
-                local success, file = pcall(readfile, filename)
-                if success and file then
-                        for line in file:gmatch("[^\r\n]+") do
-                                if not line:match("^%[") and not line:match("^깊이") then
-                                        for word in line:gmatch("[가-힣]+") do
-                                                if validWord(word) then
-                                                        local first = firstChar(word)
+        for _, data in ipairs(files) do
+                local filename = data.name
+                if isfile(filename) then
+                        local success, file = pcall(readfile, filename)
+                        if success and file then
+                                for line in file:gmatch("[^\r\n]+") do
+                                        if not line:match("^%[") and not line:match("^깊이") then
+                                                for word in line:gmatch("[가-힣]+") do
+                                                        if validWord(word) then
+                                                                local first = firstChar(word)
 
-                                                        dictionary[first] = dictionary[first] or {}
-                                                        table.insert(dictionary[first], word)
+                                                                dictionary[first] = dictionary[first] or {}
+                                                                table.insert(dictionary[first], word)
 
-                                                        if data.priority == 1 then
-                                                                essentialDictionary[first] = essentialDictionary[first] or {}
-                                                                table.insert(essentialDictionary[first], word)
-                                                                essentialSet[word] = true
-                                                        elseif data.priority == 2 then
-                                                                attackDictionary[first] = attackDictionary[first] or {}
-                                                                table.insert(attackDictionary[first], word)
-                                                                attackSet[word] = true
-                                                        elseif data.priority == 3 then
-                                                                defDictionary[first] = defDictionary[first] or {}
-                                                                table.insert(defDictionary[first], word)
-                                                                defSet[word] = true
-                                                        else
-                                                                normalDictionary[first] = normalDictionary[first] or {}
-                                                                table.insert(normalDictionary[first], word)
-                                                        end
+                                                                if data.priority == 1 then
+                                                                        essentialDictionary[first] = essentialDictionary[first] or {}
+                                                                        table.insert(essentialDictionary[first], word)
+                                                                        essentialSet[word] = true
+                                                                elseif data.priority == 2 then
+                                                                        attackDictionary[first] = attackDictionary[first] or {}
+                                                                        table.insert(attackDictionary[first], word)
+                                                                        attackSet[word] = true
+                                                                elseif data.priority == 3 then
+                                                                        defDictionary[first] = defDictionary[first] or {}
+                                                                        table.insert(defDictionary[first], word)
+                                                                        defSet[word] = true
+                                                                else
+                                                                        normalDictionary[first] = normalDictionary[first] or {}
+                                                                        table.insert(normalDictionary[first], word)
+                                                                end
 
-                                                        total += 1
-                                                end
-                                        end
-                                end
-                        end
-                end
-        end
-end
-
-status.Text = "단어 " .. total .. "개 로드"
-
-
----
-
--- 점수 사전 계산
---
--- killable[startChar] = 해당 글자로 시작하는 한방단어(상대 이을 수 없음)가 존재하는지
--- wordScore[word] :
---   1-kill  (즉사)  = 100000 + bonus  (상대 대응 0개)
---   2-kill  (강제킬)= 10000  + bonus  (상대 모든 끝글자에서 내가 킬 가능)
---   일반           = -min(enemyCount,200)*5 + bonus
--- attackBonus : 필수공격=500, 공격=200, 방어=50, 일반=0
-
-local killable  = {}
-local wordScore = {}
-
--- 1단계: 글자별 한방 가능 여부 선계산
-for startChar, wordList in pairs(dictionary) do
-        for _, word in ipairs(wordList) do
-                if not hasWordStarting(lastChar(word)) then
-                        killable[startChar] = true
-                        break
-                end
-        end
-end
-
-local function attackBonus(word)
-        if essentialSet[word] then return 500
-        elseif attackSet[word]  then return 200
-        elseif defSet[word]     then return 50
-        else                         return 0
-        end
-end
-
--- 2단계: 단어별 점수 계산
-for _, wordList in pairs(dictionary) do
-        for _, word in ipairs(wordList) do
-                if not wordScore[word] then
-                        local lc    = lastChar(word)
-                        local bonus = attackBonus(word)
-
-                        -- 상대 후보 수 + 고유 끝글자 수집 (최대 20개까지만)
-                        -- 20개 초과 시 어차피 2-kill 불가능 → 조기 종료로 성능 절약
-                        local enemyCount  = 0
-                        local opLastChars = {}
-                        local seenLC      = {}
-                        local tooMany     = false
-                        for _, v in ipairs(getDuumVariants(lc)) do
-                                if tooMany then break end
-                                local opList = dictionary[v]
-                                if opList then
-                                        enemyCount = enemyCount + #opList
-                                        for _, ow in ipairs(opList) do
-                                                local olc = lastChar(ow)
-                                                if not seenLC[olc] then
-                                                        seenLC[olc] = true
-                                                        table.insert(opLastChars, olc)
-                                                        if #opLastChars >= 20 then
-                                                                tooMany = true
-                                                                break
+                                                                total += 1
                                                         end
                                                 end
                                         end
                                 end
                         end
-
-                        local score
-                        if enemyCount == 0 then
-                                -- 1-kill: 즉사
-                                score = 100000 + bonus
-                        elseif tooMany then
-                                -- 상대 선택지 너무 많음 → 2-kill 불가, 패널티만
-                                score = -math.min(enemyCount, 200) * 5 + bonus
-                        else
-                                -- 2-kill 체크: 상대의 모든 고유 끝글자에서 내가 킬 가능?
-                                local is2Kill = true
-                                for _, olc in ipairs(opLastChars) do
-                                        local canKill = false
-                                        for _, ov in ipairs(getDuumVariants(olc)) do
-                                                if killable[ov] then canKill = true; break end
-                                        end
-                                        if not canKill then is2Kill = false; break end
-                                end
-                                local cap = math.min(enemyCount, 200)
-                                score = (is2Kill and 10000 or 0) - cap * 5 + bonus
-                        end
-
-                        wordScore[word] = score
                 end
         end
-end
 
-status.Text = "단어 " .. total .. "개 · 점수 계산 완료"
+        status.Text = "단어 " .. total .. "개 로드"
 
 
----
+        ---
 
--- N-kill 확장 (maxRoute >= 3 시만 실행)
+        -- 점수 사전 계산
 
-if maxRoute >= 3 then
-        task.wait(0.05)
-        status.Text = "N루트 계산 중 (" .. maxRoute .. "루트)..."
-        task.wait(0.05)
+        local killable  = {}
+        local wordScore = {}
 
-        -- killable2: 2-kill 이상 단어가 있는 시작글자
-        local killable2 = {}
-        for sc, wl in pairs(dictionary) do
-                for _, w in ipairs(wl) do
-                        if (wordScore[w] or 0) >= 10000 then
-                                killable2[sc] = true ; break
+        for startChar, wordList in pairs(dictionary) do
+                for _, word in ipairs(wordList) do
+                        if not hasWordStarting(lastChar(word)) then
+                                killable[startChar] = true
+                                break
                         end
                 end
         end
 
-        -- 3-kill 점수 부여 (score 5000 + bonus)
-        for _, wl in pairs(dictionary) do
-                for _, word in ipairs(wl) do
-                        if (wordScore[word] or 0) < 10000 then
-                                local lc = lastChar(word)
-                                local opEnds, seenOLC, tooMany = {}, {}, false
+        local function attackBonus(word)
+                if essentialSet[word] then return 500
+                elseif attackSet[word]  then return 200
+                elseif defSet[word]     then return 50
+                else                         return 0
+                end
+        end
+
+        for _, wordList in pairs(dictionary) do
+                for _, word in ipairs(wordList) do
+                        if not wordScore[word] then
+                                local lc    = lastChar(word)
+                                local bonus = attackBonus(word)
+
+                                local enemyCount  = 0
+                                local opLastChars = {}
+                                local seenLC      = {}
+                                local tooMany     = false
                                 for _, v in ipairs(getDuumVariants(lc)) do
                                         if tooMany then break end
-                                        local ol = dictionary[v]
-                                        if ol then
-                                                for _, ow in ipairs(ol) do
+                                        local opList = dictionary[v]
+                                        if opList then
+                                                enemyCount = enemyCount + #opList
+                                                for _, ow in ipairs(opList) do
                                                         local olc = lastChar(ow)
-                                                        if not seenOLC[olc] then
-                                                                seenOLC[olc] = true
-                                                                table.insert(opEnds, olc)
-                                                                if #opEnds >= 25 then tooMany = true ; break end
+                                                        if not seenLC[olc] then
+                                                                seenLC[olc] = true
+                                                                table.insert(opLastChars, olc)
+                                                                if #opLastChars >= 20 then
+                                                                        tooMany = true
+                                                                        break
+                                                                end
                                                         end
                                                 end
                                         end
                                 end
-                                if not tooMany and #opEnds > 0 then
-                                        local ok = true
-                                        for _, olc in ipairs(opEnds) do
-                                                local can = false
+
+                                local score
+                                if enemyCount == 0 then
+                                        score = 100000 + bonus
+                                elseif tooMany then
+                                        score = -math.min(enemyCount, 200) * 5 + bonus
+                                else
+                                        local is2Kill = true
+                                        for _, olc in ipairs(opLastChars) do
+                                                local canKill = false
                                                 for _, ov in ipairs(getDuumVariants(olc)) do
-                                                        if killable2[ov] then can = true ; break end
+                                                        if killable[ov] then canKill = true; break end
                                                 end
-                                                if not can then ok = false ; break end
+                                                if not canKill then is2Kill = false; break end
                                         end
-                                        if ok then wordScore[word] = 5000 + attackBonus(word) end
+                                        local cap = math.min(enemyCount, 200)
+                                        score = (is2Kill and 10000 or 0) - cap * 5 + bonus
                                 end
+
+                                wordScore[word] = score
                         end
                 end
         end
 
-        -- maxRoute >= 4: 4-kill (score 2000 + bonus)
-        if maxRoute >= 4 then
+        status.Text = "단어 " .. total .. "개 · 점수 계산 완료"
+
+
+        ---
+
+        -- N-kill 확장
+
+        if maxRoute >= 3 then
                 task.wait(0.05)
-                local killable3 = {}
+                status.Text = "N루트 계산 중 (" .. maxRoute .. "루트)..."
+                task.wait(0.05)
+
+                local killable2 = {}
                 for sc, wl in pairs(dictionary) do
                         for _, w in ipairs(wl) do
-                                if (wordScore[w] or 0) >= 5000 then
-                                        killable3[sc] = true ; break
+                                if (wordScore[w] or 0) >= 10000 then
+                                        killable2[sc] = true; break
                                 end
                         end
                 end
+
                 for _, wl in pairs(dictionary) do
                         for _, word in ipairs(wl) do
-                                if (wordScore[word] or 0) < 5000 then
+                                if (wordScore[word] or 0) < 10000 then
                                         local lc = lastChar(word)
                                         local opEnds, seenOLC, tooMany = {}, {}, false
                                         for _, v in ipairs(getDuumVariants(lc)) do
@@ -1227,7 +1152,7 @@ if maxRoute >= 3 then
                                                                 if not seenOLC[olc] then
                                                                         seenOLC[olc] = true
                                                                         table.insert(opEnds, olc)
-                                                                        if #opEnds >= 25 then tooMany = true ; break end
+                                                                        if #opEnds >= 25 then tooMany = true; break end
                                                                 end
                                                         end
                                                 end
@@ -1237,574 +1162,766 @@ if maxRoute >= 3 then
                                                 for _, olc in ipairs(opEnds) do
                                                         local can = false
                                                         for _, ov in ipairs(getDuumVariants(olc)) do
-                                                                if killable3[ov] then can = true ; break end
+                                                                if killable2[ov] then can = true; break end
                                                         end
-                                                        if not can then ok = false ; break end
+                                                        if not can then ok = false; break end
                                                 end
-                                                if ok then wordScore[word] = 2000 + attackBonus(word) end
+                                                if ok then wordScore[word] = 5000 + attackBonus(word) end
                                         end
                                 end
                         end
                 end
-        end
 
-        -- maxRoute >= 5: 5-kill (score 1000 + bonus)
-        if maxRoute >= 5 then
-                task.wait(0.05)
-                local killable4 = {}
-                for sc, wl in pairs(dictionary) do
-                        for _, w in ipairs(wl) do
-                                if (wordScore[w] or 0) >= 2000 then
-                                        killable4[sc] = true ; break
+                if maxRoute >= 4 then
+                        task.wait(0.05)
+                        local killable3 = {}
+                        for sc, wl in pairs(dictionary) do
+                                for _, w in ipairs(wl) do
+                                        if (wordScore[w] or 0) >= 5000 then
+                                                killable3[sc] = true; break
+                                        end
+                                end
+                        end
+                        for _, wl in pairs(dictionary) do
+                                for _, word in ipairs(wl) do
+                                        if (wordScore[word] or 0) < 5000 then
+                                                local lc = lastChar(word)
+                                                local opEnds, seenOLC, tooMany = {}, {}, false
+                                                for _, v in ipairs(getDuumVariants(lc)) do
+                                                        if tooMany then break end
+                                                        local ol = dictionary[v]
+                                                        if ol then
+                                                                for _, ow in ipairs(ol) do
+                                                                        local olc = lastChar(ow)
+                                                                        if not seenOLC[olc] then
+                                                                                seenOLC[olc] = true
+                                                                                table.insert(opEnds, olc)
+                                                                                if #opEnds >= 25 then tooMany = true; break end
+                                                                        end
+                                                                end
+                                                        end
+                                                end
+                                                if not tooMany and #opEnds > 0 then
+                                                        local ok = true
+                                                        for _, olc in ipairs(opEnds) do
+                                                                local can = false
+                                                                for _, ov in ipairs(getDuumVariants(olc)) do
+                                                                        if killable3[ov] then can = true; break end
+                                                                end
+                                                                if not can then ok = false; break end
+                                                        end
+                                                        if ok then wordScore[word] = 2000 + attackBonus(word) end
+                                                end
+                                        end
                                 end
                         end
                 end
+
+                if maxRoute >= 5 then
+                        task.wait(0.05)
+                        local killable4 = {}
+                        for sc, wl in pairs(dictionary) do
+                                for _, w in ipairs(wl) do
+                                        if (wordScore[w] or 0) >= 2000 then
+                                                killable4[sc] = true; break
+                                        end
+                                end
+                        end
+                        for _, wl in pairs(dictionary) do
+                                for _, word in ipairs(wl) do
+                                        if (wordScore[word] or 0) < 2000 then
+                                                local lc = lastChar(word)
+                                                local opEnds, seenOLC, tooMany = {}, {}, false
+                                                for _, v in ipairs(getDuumVariants(lc)) do
+                                                        if tooMany then break end
+                                                        local ol = dictionary[v]
+                                                        if ol then
+                                                                for _, ow in ipairs(ol) do
+                                                                        local olc = lastChar(ow)
+                                                                        if not seenOLC[olc] then
+                                                                                seenOLC[olc] = true
+                                                                                table.insert(opEnds, olc)
+                                                                                if #opEnds >= 25 then tooMany = true; break end
+                                                                        end
+                                                                end
+                                                        end
+                                                end
+                                                if not tooMany and #opEnds > 0 then
+                                                        local ok = true
+                                                        for _, olc in ipairs(opEnds) do
+                                                                local can = false
+                                                                for _, ov in ipairs(getDuumVariants(olc)) do
+                                                                        if killable4[ov] then can = true; break end
+                                                                end
+                                                                if not can then ok = false; break end
+                                                        end
+                                                        if ok then wordScore[word] = 1000 + attackBonus(word) end
+                                                end
+                                        end
+                                end
+                        end
+                end
+
+                status.Text = "단어 " .. total .. "개 · " .. maxRoute .. "루트 계산 완료"
+        end
+
+
+        ---
+
+        -- 사전 미리보기 빌드
+
+        local function firstChosung(word)
+                local cp = utf8.codepoint(word, 1)
+                if cp >= 0xAC00 and cp <= 0xD7A3 then
+                        return math.floor((cp - 0xAC00) / 588)
+                end
+                return -1
+        end
+
+        local prebuiltKill = {}
+        local prebuiltLong = {}
+        do
+                local seen = {}
                 for _, wl in pairs(dictionary) do
                         for _, word in ipairs(wl) do
-                                if (wordScore[word] or 0) < 2000 then
-                                        local lc = lastChar(word)
-                                        local opEnds, seenOLC, tooMany = {}, {}, false
-                                        for _, v in ipairs(getDuumVariants(lc)) do
-                                                if tooMany then break end
-                                                local ol = dictionary[v]
-                                                if ol then
-                                                        for _, ow in ipairs(ol) do
-                                                                local olc = lastChar(ow)
-                                                                if not seenOLC[olc] then
-                                                                        seenOLC[olc] = true
-                                                                        table.insert(opEnds, olc)
-                                                                        if #opEnds >= 25 then tooMany = true ; break end
-                                                                end
-                                                        end
-                                                end
-                                        end
-                                        if not tooMany and #opEnds > 0 then
-                                                local ok = true
-                                                for _, olc in ipairs(opEnds) do
-                                                        local can = false
-                                                        for _, ov in ipairs(getDuumVariants(olc)) do
-                                                                if killable4[ov] then can = true ; break end
-                                                        end
-                                                        if not can then ok = false ; break end
-                                                end
-                                                if ok then wordScore[word] = 1000 + attackBonus(word) end
-                                        end
-                                end
-                        end
-                end
-        end
-
-        status.Text = "단어 " .. total .. "개 · " .. maxRoute .. "루트 계산 완료"
-end
-
-
----
-
--- 사전 미리보기 빌드 (한방 가나다순 / 긴단어 길이·가나다순)
-
-local function firstChosung(word)
-        local cp = utf8.codepoint(word, 1)
-        if cp >= 0xAC00 and cp <= 0xD7A3 then
-                return math.floor((cp - 0xAC00) / 588)
-        end
-        return -1
-end
-
-local prebuiltKill = {}
-local prebuiltLong = {}
-do
-        local seen = {}
-        for _, wl in pairs(dictionary) do
-                for _, word in ipairs(wl) do
-                        if not seen[word] then
-                                seen[word] = true
-                                local lc = lastChar(word)
-                                local isKill = not hasWordStarting(lc)
-                                local wLen = utf8.len(word)
-                                local typePri = essentialSet[word] and 1
-                                        or (attackSet[word] and 2
-                                        or (defSet[word] and 3 or 4))
-                                local entry = {
-                                        word = word, query = "",
-                                        isKill = isKill, len = wLen,
-                                        typePri = typePri,
-                                        cs = firstChosung(word),
-                                }
-                                if isKill then
-                                        table.insert(prebuiltKill, entry)
-                                end
-                                if wLen >= 5 then
-                                        table.insert(prebuiltLong, entry)
-                                end
-                        end
-                end
-        end
-end
--- 한방: 가나다순 (초성 → 단어 바이트순)
-table.sort(prebuiltKill, function(a, b)
-        if a.cs ~= b.cs then return a.cs < b.cs end
-        return a.word < b.word
-end)
--- 긴단어: 길이 내림 → 가나다순
-table.sort(prebuiltLong, function(a, b)
-        if a.len ~= b.len then return a.len > b.len end
-        if a.cs ~= b.cs then return a.cs < b.cs end
-        return a.word < b.word
-end)
-
-
----
-
--- 사전검색 로직
-
-local allResults = {}       -- 현재 검색 전체 결과
-local searchType = "ALL"    -- "ALL" | "ATTACK" | "LONG" | "NORMAL"
-
--- RichText 특수문자 이스케이프
-local function escapeRich(s)
-        s = s:gsub("&",  "&amp;")
-        s = s:gsub("<",  "&lt;")
-        s = s:gsub(">",  "&gt;")
-        s = s:gsub('"',  "&quot;")
-        return s
-end
-
--- 결과 1행 생성
--- query 부분 파란 강조, 한방단어는 왼쪽에 빨간 점 표시
-local function makeResultRow(entry, order)
-        local word  = entry.word
-        local query = entry.query
-        local tp = entry.typePri   -- 1=필수공격, 2=공격, 3=방어, 4=일반
-
-        local row = Instance.new("TextLabel")
-        row.Size = UDim2.new(1, 0, 0, 21)
-        row.BackgroundColor3 = Color3.fromRGB(36, 36, 48)
-        row.BorderSizePixel = 0
-        row.RichText = true
-        row.Font = Enum.Font.Code
-        row.TextSize = 12
-        row.TextColor3 = Color3.new(1, 1, 1)
-        row.TextXAlignment = Enum.TextXAlignment.Left
-        row.ZIndex = 4
-        row.LayoutOrder = order
-        row.Parent = resultsFrame
-        Instance.new("UICorner", row)
-
-        -- 도트 색: 필수공격=빨강, 공격=주황, 방어=노랑, 일반=회색
-        local dotColor = tp == 1 and "rgb(255,70,70)"
-                or tp == 2 and "rgb(255,160,40)"
-                or tp == 3 and "rgb(220,200,50)"
-                or "rgb(70,70,85)"
-        local dot = '<font color="' .. dotColor .. '">●</font> '
-
-        -- query 위치 찾아 파란 강조
-        local qLen = #query
-        local pos = word:find(query, 1, true)
-        local body
-        if pos then
-                local pre = escapeRich(word:sub(1, pos - 1))
-                local mid = escapeRich(word:sub(pos, pos + qLen - 1))
-                local suf = escapeRich(word:sub(pos + qLen))
-                body = pre .. '<font color="rgb(100,180,255)"><b>' .. mid .. "</b></font>" .. suf
-        else
-                body = escapeRich(word)
-        end
-
-        row.Text = " " .. dot .. body
-        return row
-end
-
-local function clearResults()
-        for _, child in ipairs(resultsFrame:GetChildren()) do
-                if child:IsA("TextLabel") or child:IsA("TextButton")
-                        or child:IsA("Frame") then
-                        child:Destroy()
-                end
-        end
-end
-
-local function updateCanvasSize()
-        local contentH = resultsLayout.AbsoluteContentSize.Y + 6
-        resultsFrame.CanvasSize = UDim2.new(0, 0, 0, contentH)
-end
-
-local function renderRows(startIdx, endIdx)
-        for i = startIdx, endIdx do
-                makeResultRow(allResults[i], i)
-        end
-        updateCanvasSize()
-end
-
-
--- 전체 결과 렌더 (스크롤로 전부 볼 수 있음)
-local function renderAll()
-        clearResults()
-        renderRows(1, #allResults)
-        resultsFrame.CanvasPosition = Vector2.new(0, 0)
-end
-
-local function doSearch(query)
-        query = query:match("^%s*(.-)%s*$")
-
-        if query == "" then
-                queryBadge.Visible = false
-                -- 한방/긴단어 탭은 검색어 없어도 미리보기 전체 표시
-                if searchType == "ATTACK" and #prebuiltKill > 0 then
-                        allResults = prebuiltKill
-                        searchCountLbl.Text = "한방 " .. #prebuiltKill .. "개"
-                        renderAll()
-                        return
-                elseif searchType == "LONG" and #prebuiltLong > 0 then
-                        allResults = prebuiltLong
-                        searchCountLbl.Text = "긴단어 " .. #prebuiltLong .. "개"
-                        renderAll()
-                        return
-                end
-                allResults = {}
-                searchCountLbl.Text = ""
-                clearResults()
-                resultsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-                return
-        end
-
-        -- 뱃지 크기를 쿼리 길이에 맞게 조정
-        local badgeW = math.max(30, utf8.len(query) * 13 + 12)
-        queryBadge.Size = UDim2.new(0, badgeW, 0, 20)
-        queryBadgeText.Text = query
-        queryBadge.Visible = true
-
-        local qLen = #query
-        local seen = {}
-        local raw  = {}
-
-        -- 모든 단어 탐색: 앞 / 중간 / 끝 전부 포함
-        -- 한방모드는 전체 스캔, 나머지는 523개 제한
-        local RAW_CAP = math.huge
-        local rawFull = false
-        for _, wordList in pairs(dictionary) do
-                if rawFull then break end
-                for _, word in ipairs(wordList) do
-                        if not seen[word] and #word >= qLen then
-                                local pos = word:find(query, 1, true)
-                                if pos then
+                                if not seen[word] then
                                         seen[word] = true
-                                        local isAtk = essentialSet[word] or attackSet[word] or false
-                                        local posPri
-                                        if pos == 1 then posPri = 1
-                                        elseif pos + qLen - 1 == #word then posPri = 3
-                                        else posPri = 2
-                                        end
+                                        local lc = lastChar(word)
+                                        local isKill = not hasWordStarting(lc)
                                         local wLen = utf8.len(word)
                                         local typePri = essentialSet[word] and 1
                                                 or (attackSet[word] and 2
                                                 or (defSet[word] and 3 or 4))
-                                        table.insert(raw, {
-                                                word      = word,
-                                                query     = query,
-                                                isAttack  = isAtk,
-                                                isKill    = not hasWordStarting(lastChar(word)),
-                                                len       = wLen,
-                                                posPri    = posPri,
-                                                typePri   = typePri,
-                                        })
-                                        if #raw >= RAW_CAP then
-                                                rawFull = true
-                                                break
+                                        local entry = {
+                                                word = word, query = "",
+                                                isKill = isKill, len = wLen,
+                                                typePri = typePri,
+                                                cs = firstChosung(word),
+                                        }
+                                        if isKill then
+                                                table.insert(prebuiltKill, entry)
+                                        end
+                                        if wLen >= 5 then
+                                                table.insert(prebuiltLong, entry)
                                         end
                                 end
                         end
                 end
         end
-
-        -- 유형 필터 적용
-        local filtered = {}
-        for _, entry in ipairs(raw) do
-                local ok = false
-                if     searchType == "ALL"    then ok = true
-                elseif searchType == "ATTACK" then ok = entry.isKill        -- 즉사(한방)단어만
-                elseif searchType == "LONG"   then ok = entry.len >= 5
-                elseif searchType == "NORMAL" then ok = entry.typePri >= 3   -- 방어 + 일반
-                end
-                if ok then table.insert(filtered, entry) end
-        end
-
-        -- 정렬
-        -- 전체모드: 유형(한방→긴단어→노멀) → 앞/중/끝 → 길이내림 → 가나다
-        -- 한방모드: 길이내림 → 가나다
-        -- 긴단어모드: 길이내림 → 가나다
-        -- 노멀모드: 앞/중/끝 → 가나다
-        table.sort(filtered, function(a, b)
-                if searchType == "ALL" then
-                        if a.typePri ~= b.typePri then return a.typePri < b.typePri end
-                        if a.posPri  ~= b.posPri  then return a.posPri  < b.posPri  end
-                        if a.len     ~= b.len     then return a.len     > b.len     end
-                        return a.word < b.word
-                elseif searchType == "LONG" then
-                        if a.len ~= b.len then return a.len > b.len end
-                        return a.word < b.word
-                elseif searchType == "ATTACK" then
-                        if a.typePri ~= b.typePri then return a.typePri < b.typePri end
-                        if a.len ~= b.len then return a.len > b.len end
-                        return a.word < b.word
-                else -- NORMAL
-                        if a.posPri ~= b.posPri then return a.posPri < b.posPri end
-                        return a.word < b.word
-                end
+        table.sort(prebuiltKill, function(a, b)
+                if a.cs ~= b.cs then return a.cs < b.cs end
+                return a.word < b.word
+        end)
+        table.sort(prebuiltLong, function(a, b)
+                if a.len ~= b.len then return a.len > b.len end
+                if a.cs ~= b.cs then return a.cs < b.cs end
+                return a.word < b.word
         end)
 
-        allResults = filtered
 
-        if #allResults == 0 then
-                searchCountLbl.Text = "결과 없음"
-        else
-                searchCountLbl.Text = "총 " .. #allResults .. "개"
+        ---
+
+        -- 사전검색 로직
+
+        local allResults = {}
+        local searchType = "ALL"
+
+        local function escapeRich(s)
+                s = s:gsub("&",  "&amp;")
+                s = s:gsub("<",  "&lt;")
+                s = s:gsub(">",  "&gt;")
+                s = s:gsub('"',  "&quot;")
+                return s
         end
 
-        renderAll()
-end
+        local function makeResultRow(entry, order)
+                local word  = entry.word
+                local query = entry.query
+                local tp    = entry.typePri
 
--- 유형 버튼 클릭 핸들러
-local function setSearchType(newType, activeBtn)
-        searchType = newType
-        for _, btn in ipairs({typeBtnAll, typeBtnAttack, typeBtnLong, typeBtnNormal}) do
-                btn.BackgroundColor3 = TYPE_IDLE_COLOR
+                local row = Instance.new("TextLabel")
+                row.Size = UDim2.new(1, 0, 0, 21)
+                row.BackgroundColor3 = Color3.fromRGB(36, 36, 48)
+                row.BorderSizePixel = 0
+                row.RichText = true
+                row.Font = Enum.Font.Code
+                row.TextSize = 12
+                row.TextColor3 = Color3.new(1, 1, 1)
+                row.TextXAlignment = Enum.TextXAlignment.Left
+                row.ZIndex = 4
+                row.LayoutOrder = order
+                row.Parent = resultsFrame
+                Instance.new("UICorner", row)
+
+                local dotColor = tp == 1 and "rgb(255,70,70)"
+                        or tp == 2 and "rgb(255,160,40)"
+                        or tp == 3 and "rgb(220,200,50)"
+                        or "rgb(70,70,85)"
+                local dot = '<font color="' .. dotColor .. '">●</font> '
+
+                local qLen = #query
+                local pos  = word:find(query, 1, true)
+                local body
+                if pos then
+                        local pre = escapeRich(word:sub(1, pos - 1))
+                        local mid = escapeRich(word:sub(pos, pos + qLen - 1))
+                        local suf = escapeRich(word:sub(pos + qLen))
+                        body = pre .. '<font color="rgb(100,180,255)"><b>' .. mid .. "</b></font>" .. suf
+                else
+                        body = escapeRich(word)
+                end
+
+                row.Text = " " .. dot .. body
+                return row
         end
-        activeBtn.BackgroundColor3 = TYPE_ACTIVE_COLOR
-        doSearch(searchBox.Text)
-end
 
-typeBtnAll.MouseButton1Click:Connect(function()
-        setSearchType("ALL", typeBtnAll)
-end)
-typeBtnAttack.MouseButton1Click:Connect(function()
-        setSearchType("ATTACK", typeBtnAttack)
-end)
-typeBtnLong.MouseButton1Click:Connect(function()
-        setSearchType("LONG", typeBtnLong)
-end)
-typeBtnNormal.MouseButton1Click:Connect(function()
-        setSearchType("NORMAL", typeBtnNormal)
-end)
-
--- 입력창 변경 감지
-searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-        doSearch(searchBox.Text)
-end)
-
-
----
-
--- 데이터
-
-local usedWords = {}
-local recentWords = {}
-local lastStartChar = nil
-
-local function isUsed(word)
-        return usedWords[word] == true
-end
-
-local function addRecent(word)
-        table.insert(recentWords, 1, word)
-        if #recentWords > 20 then
-                table.remove(recentWords)
+        local function clearResults()
+                for _, child in ipairs(resultsFrame:GetChildren()) do
+                        if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("Frame") then
+                                child:Destroy()
+                        end
+                end
         end
-end
 
-local function wasRecent(word)
-        for _, v in ipairs(recentWords) do
-                if v == word then return true end
+        local function updateCanvasSize()
+                local contentH = resultsLayout.AbsoluteContentSize.Y + 6
+                resultsFrame.CanvasSize = UDim2.new(0, 0, 0, contentH)
         end
-        return false
-end
 
-local function shuffle(tbl)
-        for i = #tbl, 2, -1 do
-                local j = math.random(i)
-                tbl[i], tbl[j] = tbl[j], tbl[i]
+        local function renderRows(startIdx, endIdx)
+                for i = startIdx, endIdx do
+                        makeResultRow(allResults[i], i)
+                end
+                updateCanvasSize()
         end
-end
 
-local function pickOne(candidates)
-        if #candidates <= 0 then return nil end
-        shuffle(candidates)
-        local top = {}
-        for i = 1, math.min(5, #candidates) do
-                table.insert(top, candidates[i])
+        local function renderAll()
+                clearResults()
+                renderRows(1, #allResults)
+                resultsFrame.CanvasPosition = Vector2.new(0, 0)
         end
-        return top[math.random(1, #top)]
-end
+
+        local function doSearch(query)
+                query = query:match("^%s*(.-)%s*$")
+
+                if query == "" then
+                        queryBadge.Visible = false
+                        if searchType == "ATTACK" and #prebuiltKill > 0 then
+                                allResults = prebuiltKill
+                                searchCountLbl.Text = "한방 " .. #prebuiltKill .. "개"
+                                renderAll()
+                                return
+                        elseif searchType == "LONG" and #prebuiltLong > 0 then
+                                allResults = prebuiltLong
+                                searchCountLbl.Text = "긴단어 " .. #prebuiltLong .. "개"
+                                renderAll()
+                                return
+                        end
+                        allResults = {}
+                        searchCountLbl.Text = ""
+                        clearResults()
+                        resultsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+                        return
+                end
+
+                local badgeW = math.max(30, utf8.len(query) * 13 + 12)
+                queryBadge.Size = UDim2.new(0, badgeW, 0, 20)
+                queryBadgeText.Text = query
+                queryBadge.Visible = true
+
+                local qLen = #query
+                local seen = {}
+                local raw  = {}
+                local RAW_CAP = math.huge
+
+                for _, wordList in pairs(dictionary) do
+                        for _, word in ipairs(wordList) do
+                                if not seen[word] and #word >= qLen then
+                                        local pos = word:find(query, 1, true)
+                                        if pos then
+                                                seen[word] = true
+                                                local isAtk = essentialSet[word] or attackSet[word] or false
+                                                local posPri
+                                                if pos == 1 then posPri = 1
+                                                elseif pos + qLen - 1 == #word then posPri = 3
+                                                else posPri = 2
+                                                end
+                                                local wLen = utf8.len(word)
+                                                local typePri = essentialSet[word] and 1
+                                                        or (attackSet[word] and 2
+                                                        or (defSet[word] and 3 or 4))
+                                                table.insert(raw, {
+                                                        word     = word,
+                                                        query    = query,
+                                                        isAttack = isAtk,
+                                                        isKill   = not hasWordStarting(lastChar(word)),
+                                                        len      = wLen,
+                                                        posPri   = posPri,
+                                                        typePri  = typePri,
+                                                })
+                                        end
+                                end
+                        end
+                end
+
+                local filtered = {}
+                for _, entry in ipairs(raw) do
+                        local ok = false
+                        if     searchType == "ALL"    then ok = true
+                        elseif searchType == "ATTACK" then ok = entry.isKill
+                        elseif searchType == "LONG"   then ok = entry.len >= 5
+                        elseif searchType == "NORMAL" then ok = entry.typePri >= 3
+                        end
+                        if ok then table.insert(filtered, entry) end
+                end
+
+                table.sort(filtered, function(a, b)
+                        if searchType == "ALL" then
+                                if a.typePri ~= b.typePri then return a.typePri < b.typePri end
+                                if a.posPri  ~= b.posPri  then return a.posPri  < b.posPri  end
+                                if a.len     ~= b.len     then return a.len     > b.len     end
+                                return a.word < b.word
+                        elseif searchType == "LONG" then
+                                if a.len ~= b.len then return a.len > b.len end
+                                return a.word < b.word
+                        elseif searchType == "ATTACK" then
+                                if a.typePri ~= b.typePri then return a.typePri < b.typePri end
+                                if a.len ~= b.len then return a.len > b.len end
+                                return a.word < b.word
+                        else
+                                if a.posPri ~= b.posPri then return a.posPri < b.posPri end
+                                return a.word < b.word
+                        end
+                end)
+
+                allResults = filtered
+
+                if #allResults == 0 then
+                        searchCountLbl.Text = "결과 없음"
+                else
+                        searchCountLbl.Text = "총 " .. #allResults .. "개"
+                end
+
+                renderAll()
+        end
+
+        local function setSearchType(newType, activeBtn)
+                searchType = newType
+                for _, btn in ipairs({typeBtnAll, typeBtnAttack, typeBtnLong, typeBtnNormal}) do
+                        btn.BackgroundColor3 = TYPE_IDLE_COLOR
+                end
+                activeBtn.BackgroundColor3 = TYPE_ACTIVE_COLOR
+                doSearch(searchBox.Text)
+        end
+
+        typeBtnAll.MouseButton1Click:Connect(function()
+                setSearchType("ALL", typeBtnAll)
+        end)
+        typeBtnAttack.MouseButton1Click:Connect(function()
+                setSearchType("ATTACK", typeBtnAttack)
+        end)
+        typeBtnLong.MouseButton1Click:Connect(function()
+                setSearchType("LONG", typeBtnLong)
+        end)
+        typeBtnNormal.MouseButton1Click:Connect(function()
+                setSearchType("NORMAL", typeBtnNormal)
+        end)
+
+        searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                doSearch(searchBox.Text)
+        end)
 
 
----
+        ---
 
--- 한방
+        -- 데이터
 
--- 공통: 후보 수집 → 점수 내림차순 정렬 → 상위 N개 중 랜덤 픽
-local function findByScore(startChar, filterFn, topN)
-        topN = topN or 3
-        local candidates = {}
-        local seenW = {}
+        local usedWords   = {}
+        local recentWords = {}
+        local lastStartChar = nil
 
-        local function tryList(list)
-                if not list then return end
-                for _, word in ipairs(list) do
-                        if not seenW[word] and not isUsed(word) and not wasRecent(word) then
-                                seenW[word] = true
-                                if not filterFn or filterFn(word) then
+        local function isUsed(word)
+                return usedWords[word] == true
+        end
+
+        local function addRecent(word)
+                table.insert(recentWords, 1, word)
+                if #recentWords > 20 then
+                        table.remove(recentWords)
+                end
+        end
+
+        local function wasRecent(word)
+                for _, v in ipairs(recentWords) do
+                        if v == word then return true end
+                end
+                return false
+        end
+
+        local function shuffle(tbl)
+                for i = #tbl, 2, -1 do
+                        local j = math.random(i)
+                        tbl[i], tbl[j] = tbl[j], tbl[i]
+                end
+        end
+
+        local function pickOne(candidates)
+                if #candidates <= 0 then return nil end
+                shuffle(candidates)
+                local top = {}
+                for i = 1, math.min(5, #candidates) do
+                        table.insert(top, candidates[i])
+                end
+                return top[math.random(1, #top)]
+        end
+
+
+        ---
+
+        -- 한방
+
+        local function findByScore(startChar, filterFn, topN)
+                topN = topN or 3
+                local candidates = {}
+                local seenW = {}
+
+                local function tryList(list)
+                        if not list then return end
+                        for _, word in ipairs(list) do
+                                if not seenW[word] and not isUsed(word) and not wasRecent(word) then
+                                        seenW[word] = true
+                                        if not filterFn or filterFn(word) then
+                                                table.insert(candidates, word)
+                                        end
+                                end
+                        end
+                end
+
+                tryList(dictionary[startChar])
+                if #candidates == 0 then
+                        for _, variant in ipairs(getDuumVariants(startChar)) do
+                                if variant ~= startChar then
+                                        tryList(dictionary[variant])
+                                end
+                        end
+                end
+
+                if #candidates == 0 then return nil end
+                table.sort(candidates, function(a, b)
+                        return (wordScore[a] or 0) > (wordScore[b] or 0)
+                end)
+                local selected = candidates[math.random(1, math.min(topN, #candidates))]
+                if selected then addRecent(selected) end
+                return selected
+        end
+
+        local function findBestWord(startChar)
+                return findByScore(startChar, function(w)
+                        return (wordScore[w] or 0) >= 100000
+                end, 3)
+        end
+
+
+        ---
+
+        -- 노멀
+
+        local function findNormalWord(startChar)
+                local best = findByScore(startChar, function(w)
+                        local s = wordScore[w] or 0
+                        return s >= 10000 and s < 100000
+                end, 5)
+                if best then return best end
+
+                if maxRoute >= 3 then
+                        local b3 = findByScore(startChar, function(w)
+                                local s = wordScore[w] or 0
+                                return s >= 5000 and s < 10000
+                        end, 5)
+                        if b3 then return b3 end
+                end
+
+                if maxRoute >= 4 then
+                        local b4 = findByScore(startChar, function(w)
+                                local s = wordScore[w] or 0
+                                return s >= 2000 and s < 5000
+                        end, 5)
+                        if b4 then return b4 end
+                end
+
+                if maxRoute >= 5 then
+                        local b5 = findByScore(startChar, function(w)
+                                local s = wordScore[w] or 0
+                                return s >= 1000 and s < 2000
+                        end, 5)
+                        if b5 then return b5 end
+                end
+
+                return findByScore(startChar, function(w)
+                        return (wordScore[w] or 0) < 10000
+                end, 3)
+        end
+
+
+        ---
+
+        -- 긴단어
+
+        local function findLongestWord(startChar)
+                local candidates = {}
+                local seenW = {}
+
+                local function tryList(list)
+                        if not list then return end
+                        for _, word in ipairs(list) do
+                                if not seenW[word] and not isUsed(word) and not wasRecent(word) then
+                                        seenW[word] = true
                                         table.insert(candidates, word)
                                 end
                         end
                 end
+
+                tryList(dictionary[startChar])
+                if #candidates == 0 then
+                        for _, variant in ipairs(getDuumVariants(startChar)) do
+                                if variant ~= startChar then
+                                        tryList(dictionary[variant])
+                                end
+                        end
+                end
+                if #candidates == 0 then return nil end
+                table.sort(candidates, function(a, b)
+                        local la, lb = utf8.len(a), utf8.len(b)
+                        if la ~= lb then return la > lb end
+                        return (wordScore[a] or 0) > (wordScore[b] or 0)
+                end)
+                local selected = candidates[math.random(1, math.min(5, #candidates))]
+                if selected then addRecent(selected) end
+                return selected
         end
 
-        -- 1순위: 게임이 제시한 정확한 글자로 시작하는 단어
-        --        (두음법칙 미적용 게임에서 변형 단어를 제출하면 거부됨)
-        tryList(dictionary[startChar])
 
-        -- 2순위: 정확한 글자 후보가 없을 때만 두음법칙 변형 fallback
-        if #candidates == 0 then
-                for _, variant in ipairs(getDuumVariants(startChar)) do
-                        if variant ~= startChar then
-                                tryList(dictionary[variant])
+        ---
+
+        -- 미니맥스 (Negamax + 알파베타, depth-2)
+        -- 내 후보 100개 선별 후 depth-2 수읽기로 한방까지 가는 최적 루트 탐색
+
+        local MINIMAX_DEPTH   = 2    -- 수읽기 깊이 (내 턴 + 상대 턴 합산)
+        local MINIMAX_SAMPLE  = 10   -- 각 깊이에서 탐색할 후보 단어 수
+        local MY_CANDIDATES   = 100  -- 내 첫 수 후보 단어 수
+
+        -- startChar 기준 후보 단어 최대 maxN개 수집 (점수 내림차순)
+        -- extraFilter: function(word)→bool  추가 필터링 (nil = 없음)
+        local function collectCandidates(startChar, maxN, extraFilter)
+                maxN = maxN or MINIMAX_SAMPLE
+                local candidates = {}
+                local seenW = {}
+
+                local function tryList(list)
+                        if not list then return end
+                        for _, word in ipairs(list) do
+                                if not seenW[word] and not isUsed(word) and not wasRecent(word) then
+                                        if not extraFilter or extraFilter(word) then
+                                                seenW[word] = true
+                                                table.insert(candidates, word)
+                                        end
+                                end
                         end
+                end
+
+                -- 정확한 글자 우선
+                tryList(dictionary[startChar])
+                -- 부족하면 두음법칙 변형 fallback
+                if #candidates < maxN then
+                        for _, variant in ipairs(getDuumVariants(startChar)) do
+                                if variant ~= startChar then
+                                        tryList(dictionary[variant])
+                                        if #candidates >= maxN * 3 then break end
+                                end
+                        end
+                end
+
+                -- 점수 내림차순 정렬
+                table.sort(candidates, function(a, b)
+                        return (wordScore[a] or 0) > (wordScore[b] or 0)
+                end)
+
+                local result = {}
+                for i = 1, math.min(maxN, #candidates) do
+                        result[i] = candidates[i]
+                end
+                return result
+        end
+
+        -- ───────────────────────────────────────────
+        -- Negamax + 알파베타 가지치기
+        --
+        -- 반환값: 현재 플레이어 관점의 점수 (양수 = 유리)
+        -- char   : 현재 플레이어가 시작해야 할 글자
+        -- depth  : 남은 탐색 깊이 (0이면 리프 평가)
+        -- alpha  : 현재 플레이어가 보장한 최솟값 (최대화 하한)
+        -- beta   : 상대가 허용하는 최댓값 (가지치기 상한)
+        --
+        -- 점수 계층 (높을수록 유리):
+        --   +999999  즉사 (상대 응수 없음)
+        --   +500000~ 한방단어 (score >= 100000)
+        --   + 50000~ 2-kill 경로 (score >= 10000)
+        --   기타     wordScore 기반
+        -- ───────────────────────────────────────────
+        local function negamax(char, depth, alpha, beta)
+                local cands = collectCandidates(char, MINIMAX_SAMPLE)
+
+                -- 응수 불가 = 현재 플레이어 패배
+                if #cands == 0 then
+                        return -999999
+                end
+
+                -- 리프 노드: 최고점 단어 점수로 평가
+                if depth == 0 then
+                        local best = -math.huge
+                        for _, w in ipairs(cands) do
+                                local s = wordScore[w] or 0
+                                if s > best then best = s end
+                        end
+                        return best
+                end
+
+                local best = -math.huge
+
+                for _, word in ipairs(cands) do
+                        local ws = wordScore[word] or 0
+                        local lc = lastChar(word)
+
+                        -- 상대 응수 가능 여부 빠른 체크
+                        local opFirst = collectCandidates(lc, 1)
+                        local val
+
+                        if #opFirst == 0 then
+                                -- 즉사 (한방단어) → 최고 점수, 탐색 즉시 종료
+                                val = 999999
+                        else
+                                -- 상대 관점 negamax → negate 해서 내 관점으로 변환
+                                -- 한방단어일수록 wordScore 높음 → 경로 점수에 반영
+                                val = ws + (- negamax(lc, depth - 1, -beta, -alpha))
+                        end
+
+                        if val > best then best = val end
+                        if best > alpha then alpha = best end
+                        -- 알파베타 가지치기
+                        if alpha >= beta then break end
+                end
+
+                return best
+        end
+
+        -- 내 후보 100개에서 depth-2 negamax로 최적 단어 선택
+        -- rootFilter: 첫 수 후보를 추가 필터링하는 함수 (nil = 필터 없음)
+        -- 노멀 모드: 첫 수에서 즉사단어 제외 → 상대가 받아치기 힘든 세팅 단어 우선
+        -- 이후 탐색 트리에서 두 번째 수로 한방단어 도달 경로를 탐색
+        local function findMiniMaxWord(startChar, rootFilter)
+                local myCands = collectCandidates(startChar, MY_CANDIDATES, rootFilter)
+
+                -- rootFilter 적용 후 후보가 없으면 필터 없이 재수집 (안전장치)
+                if #myCands == 0 then
+                        myCands = collectCandidates(startChar, MY_CANDIDATES)
+                end
+                if #myCands == 0 then return nil end
+
+                local bestWord = nil
+                local bestEval = -math.huge
+                local alpha    = -math.huge
+                local beta     =  math.huge
+
+                for _, word in ipairs(myCands) do
+                        local ws = wordScore[word] or 0
+                        local lc = lastChar(word)
+
+                        -- 즉사 체크 (탐색 없이 바로 확정)
+                        -- 노멀 모드에서는 rootFilter로 이미 즉사단어가 걸러져 있으나
+                        -- 필터 없이 재수집한 경우 즉사가 나올 수 있으므로 유지
+                        local opFirst = collectCandidates(lc, 1)
+                        local eval
+
+                        if #opFirst == 0 then
+                                eval = 999999 + ws
+                        else
+                                -- 내 수는 이미 선택, 다음은 상대 턴부터 negamax
+                                eval = ws + (- negamax(lc, MINIMAX_DEPTH - 1, -beta, -alpha))
+                        end
+
+                        if eval > bestEval then
+                                bestEval = eval
+                                bestWord = word
+                        end
+                        if bestEval > alpha then alpha = bestEval end
+                        if alpha >= beta then break end
+                end
+
+                if bestWord then addRecent(bestWord) end
+                return bestWord
+        end
+
+
+        ---
+
+        -- 생성
+
+        local function generateWord(startChar)
+                if useMinimax then
+                        local rootFilter = nil
+
+                        if mode == "NORMAL" then
+                                -- 노멀 + 미니맥스:
+                                -- 첫 수에서 즉사단어(한방) 완전 제외
+                                -- 대신 상대가 이어받기 힘든 2-kill 세팅 단어 or 끝글자가 나에게 유리한 공격단어 우선
+                                -- depth-2 탐색으로 두 번째 수에서 한방 마무리 경로를 자동 탐색
+                                rootFilter = function(w)
+                                        local s = wordScore[w] or 0
+                                        -- 즉사단어(score >= 100000) 제외
+                                        -- 필수공격·공격단어(attackBonus 포함) 우선 자동 반영됨 (점수에 포함되어 있음)
+                                        return s < 100000
+                                end
+                        end
+
+                        local mmWord = findMiniMaxWord(startChar, rootFilter)
+                        if mmWord then return mmWord end
+                end
+
+                if mode == "ONE" then
+                        return findBestWord(startChar)
+                elseif mode == "LONG" then
+                        return findLongestWord(startChar)
+                else
+                        return findNormalWord(startChar)
                 end
         end
 
-        if #candidates == 0 then return nil end
-        table.sort(candidates, function(a, b)
-                return (wordScore[a] or 0) > (wordScore[b] or 0)
-        end)
-        local selected = candidates[math.random(1, math.min(topN, #candidates))]
-        if selected then addRecent(selected) end
-        return selected
-end
 
-local function findBestWord(startChar)
-        -- 1-kill 단어만 대상 (score >= 100000)
-        return findByScore(startChar, function(w)
-                return (wordScore[w] or 0) >= 100000
-        end, 3)
-end
+        ---
 
+        -- 타이핑
 
----
-
--- 노멀
-
-local function findNormalWord(startChar)
-        -- 루트 유도 모드: maxRoute 설정에 따라 깊이 탐색
-        -- 1-kill(score>=100000)은 한방 모드 전용 → 노멀에서 제외
-
-        -- 1단계: 2-kill (score 10000~99999)
-        local best = findByScore(startChar, function(w)
-                local s = wordScore[w] or 0
-                return s >= 10000 and s < 100000
-        end, 5)
-        if best then return best end
-
-        -- 2단계: 3-kill (score 5000~9999) — maxRoute >= 3 시
-        if maxRoute >= 3 then
-                local b3 = findByScore(startChar, function(w)
-                        local s = wordScore[w] or 0
-                        return s >= 5000 and s < 10000
-                end, 5)
-                if b3 then return b3 end
-        end
-
-        -- 3단계: 4-kill (score 2000~4999) — maxRoute >= 4 시
-        if maxRoute >= 4 then
-                local b4 = findByScore(startChar, function(w)
-                        local s = wordScore[w] or 0
-                        return s >= 2000 and s < 5000
-                end, 5)
-                if b4 then return b4 end
-        end
-
-        -- 4단계: 5-kill (score 1000~1999) — maxRoute >= 5 시
-        if maxRoute >= 5 then
-                local b5 = findByScore(startChar, function(w)
-                        local s = wordScore[w] or 0
-                        return s >= 1000 and s < 2000
-                end, 5)
-                if b5 then return b5 end
-        end
-
-        -- 최후 fallback: N-kill 없을 때 일반 최고점 단어
-        return findByScore(startChar, function(w)
-                return (wordScore[w] or 0) < 10000
-        end, 3)
-end
-
-
----
-
--- 긴단어
-
-local function findLongestWord(startChar)
-        -- 길이 우선, 동점이면 점수 높은 순
-        -- 정확한 글자 우선, 없으면 두음법칙 변형 fallback
-        local candidates = {}
-        local seenW = {}
-
-        local function tryList(list)
-                if not list then return end
-                for _, word in ipairs(list) do
-                        if not seenW[word] and not isUsed(word) and not wasRecent(word) then
-                                seenW[word] = true
-                                table.insert(candidates, word)
+        local function typingEffect(word)
+                local current = ""
+                for _, code in utf8.codes(word) do
+                        local char = utf8.char(code)
+                        if inputMode == "MOBILE" then
+                                ReplicatedStorage
+                                        :WaitForChild("Remotes")
+                                        :WaitForChild("TypingWord")
+                                        :FireServer(current .. getCho(char))
+                                task.wait(
+                                        math.random(
+                                                currentSpeed.Delay[1] * 1000,
+                                                currentSpeed.Delay[2] * 1000
+                                        ) / 1000
+                                )
                         end
-                end
-        end
-
-        tryList(dictionary[startChar])
-        if #candidates == 0 then
-                for _, variant in ipairs(getDuumVariants(startChar)) do
-                        if variant ~= startChar then
-                                tryList(dictionary[variant])
-                        end
-                end
-        end
-        if #candidates == 0 then return nil end
-        table.sort(candidates, function(a, b)
-                local la, lb = utf8.len(a), utf8.len(b)
-                if la ~= lb then return la > lb end
-                return (wordScore[a] or 0) > (wordScore[b] or 0)
-        end)
-        local selected = candidates[math.random(1, math.min(5, #candidates))]
-        if selected then addRecent(selected) end
-        return selected
-end
-
-
----
-
--- 생성
-
-local function generateWord(startChar)
-        if mode == "ONE" then
-                return findBestWord(startChar)
-        elseif mode == "LONG" then
-                return findLongestWord(startChar)
-        else
-                return findNormalWord(startChar)
-        end
-end
-
-
----
-
--- 타이핑
-
-local function typingEffect(word)
-        local current = ""
-        for _, code in utf8.codes(word) do
-                local char = utf8.char(code)
-                if inputMode == "MOBILE" then
+                        current = current .. char
                         ReplicatedStorage
                                 :WaitForChild("Remotes")
                                 :WaitForChild("TypingWord")
-                                :FireServer(current .. getCho(char))
+                                :FireServer(current)
                         task.wait(
                                 math.random(
                                         currentSpeed.Delay[1] * 1000,
@@ -1812,102 +1929,90 @@ local function typingEffect(word)
                                 ) / 1000
                         )
                 end
-                current = current .. char
+        end
+
+
+        ---
+
+        -- 제출
+
+        local function submitWord(word)
+                status.Text = "입력중: " .. word
+                typingEffect(word)
+                task.wait(0.1)
+                status.Text = "전송: " .. word
                 ReplicatedStorage
                         :WaitForChild("Remotes")
-                        :WaitForChild("TypingWord")
-                        :FireServer(current)
-                task.wait(
-                        math.random(
-                                currentSpeed.Delay[1] * 1000,
-                                currentSpeed.Delay[2] * 1000
-                        ) / 1000
-                )
+                        :WaitForChild("SumbitWord")
+                        :FireServer(word)
+                usedWords[word] = true
         end
-end
 
 
----
+        ---
 
--- 제출
+        -- 자동입력
 
-local function submitWord(word)
-        status.Text = "입력중: " .. word
-        typingEffect(word)
-        task.wait(0.1)
-        status.Text = "전송: " .. word
-        ReplicatedStorage
-                :WaitForChild("Remotes")
-                :WaitForChild("SumbitWord")
-                :FireServer(word)
-        usedWords[word] = true
-end
+        button.MouseButton1Click:Connect(function()
+                local success, err = pcall(function()
+                        local label =
+                                player.PlayerGui
+                                .GameGui
+                                .TriesFrame
+                                .SpectatorTipLabel
 
+                        local text = label.Text
+                        local char = text:match("'(.-)'")
 
----
+                        if not char then
+                                status.Text = "글자 감지 실패"
+                                return
+                        end
 
--- 자동입력
+                        lastStartChar = char
+                        local word = generateWord(char)
 
-button.MouseButton1Click:Connect(function()
-        local success, err = pcall(function()
-                local label =
-                        player.PlayerGui
-                        .GameGui
-                        .TriesFrame
-                        .SpectatorTipLabel
+                        if word then
+                                submitWord(word)
+                        else
+                                status.Text = "단어 없음"
+                        end
+                end)
 
-                local text = label.Text
-                local char = text:match("'(.-)'")
-
-                if not char then
-                        status.Text = "글자 감지 실패"
-                        return
-                end
-
-                lastStartChar = char
-                local word = generateWord(char)
-
-                if word then
-                        submitWord(word)
-                else
-                        status.Text = "단어 없음"
+                if not success then
+                        status.Text = "오류 발생"
+                        warn(err)
                 end
         end)
 
-        if not success then
-                status.Text = "오류 발생"
-                warn(err)
-        end
-end)
+
+        ---
+
+        -- 재생성
+
+        rerollBtn.MouseButton1Click:Connect(function()
+                if not lastStartChar then
+                        status.Text = "이전 글자 없음"
+                        return
+                end
+                local word = generateWord(lastStartChar)
+                if word then
+                        submitWord(word)
+                else
+                        status.Text = "재생성 실패"
+                end
+        end)
 
 
----
+        ---
 
--- 재생성
+        -- 리셋
 
-rerollBtn.MouseButton1Click:Connect(function()
-        if not lastStartChar then
-                status.Text = "이전 글자 없음"
-                return
-        end
-        local word = generateWord(lastStartChar)
-        if word then
-                submitWord(word)
-        else
-                status.Text = "재생성 실패"
-        end
-end)
-
-
----
-
--- 리셋
-
-resetBtn.MouseButton1Click:Connect(function()
-        usedWords = {}
-        recentWords = {}
-        status.Text = "초기화 완료"
-end)
+        resetBtn.MouseButton1Click:Connect(function()
+                usedWords   = {}
+                recentWords = {}
+                status.Text = "초기화 완료"
+        end)
 
 
 end -- startBot
