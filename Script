@@ -28,8 +28,8 @@ gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = CoreGui
 
-local FRAME_H_CLOSED = 375
-local FRAME_H_OPEN   = 675
+local FRAME_H_CLOSED = 460
+local FRAME_H_OPEN   = 760
 local searchVisible = false
 local maxRoute = 2
 
@@ -587,6 +587,44 @@ end)
 
 ---
 
+-- 미니맥스 세부 설정 (탐색깊이 / 후보수 / 탐색시간)
+
+local function makeSettingRow(labelText, defaultVal, yPos)
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(0, 145, 0, 22)
+        lbl.Position = UDim2.new(0, 10, 0, yPos)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = labelText
+        lbl.Font = Enum.Font.Code
+        lbl.TextSize = 12
+        lbl.TextColor3 = Color3.fromRGB(190, 190, 210)
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.ZIndex = 3
+        lbl.Parent = frame
+
+        local box = Instance.new("TextBox")
+        box.Size = UDim2.new(0, 80, 0, 22)
+        box.Position = UDim2.new(1, -92, 0, yPos)
+        box.BackgroundColor3 = Color3.fromRGB(45, 45, 58)
+        box.BorderSizePixel = 0
+        box.Text = tostring(defaultVal)
+        box.Font = Enum.Font.GothamBold
+        box.TextSize = 13
+        box.TextColor3 = Color3.new(1, 1, 1)
+        box.ClearTextOnFocus = false
+        box.ZIndex = 4
+        box.Parent = frame
+        Instance.new("UICorner", box)
+        return box
+end
+
+local mmDepthBox  = makeSettingRow("탐색깊이  (수)",       2,   313)
+local mmSampleBox = makeSettingRow("후보수  (각 깊이)",    10,  339)
+local mmTimeBox   = makeSettingRow("탐색시간  (초, 0=무제한)", 0, 365)
+
+
+---
+
 -- 사전검색 컨테이너
 
 local searchContainer = Instance.new("Frame")
@@ -730,7 +768,7 @@ resultsPad.Parent = resultsFrame
 local button = makeButton(
         "자동 입력",
         UDim2.new(1, -20, 0, 48),
-        UDim2.new(0, 10, 0, 315),
+        UDim2.new(0, 10, 0, 396),
         Color3.fromRGB(60, 180, 100),
         frame
 )
@@ -1706,9 +1744,24 @@ startBot = function()
         -- 미니맥스 (Negamax + 알파베타, depth-2)
         -- 내 후보 100개 선별 후 depth-2 수읽기로 한방까지 가는 최적 루트 탐색
 
-        local MINIMAX_DEPTH   = 2    -- 수읽기 깊이 (내 턴 + 상대 턴 합산)
-        local MINIMAX_SAMPLE  = 10   -- 각 깊이에서 탐색할 후보 단어 수
-        local MY_CANDIDATES   = 100  -- 내 첫 수 후보 단어 수
+        -- GUI 박스에서 실시간으로 읽는 설정값
+        local function readMMSettings()
+                local depth   = math.max(1, math.min(10, math.floor(tonumber(mmDepthBox.Text)  or 2)))
+                local sample  = math.max(1, math.min(200, math.floor(tonumber(mmSampleBox.Text) or 10)))
+                local timeLim = math.max(0, tonumber(mmTimeBox.Text) or 0)
+                mmDepthBox.Text  = tostring(depth)
+                mmSampleBox.Text = tostring(sample)
+                mmTimeBox.Text   = tostring(timeLim)
+                return depth, sample, sample * 10, timeLim
+                -- 반환: depth, MINIMAX_SAMPLE, MY_CANDIDATES(샘플의 10배), timeLimitSec
+        end
+
+        local MINIMAX_DEPTH   = 2    -- 아래 findMiniMaxWord에서 매 탐색마다 갱신
+        local MINIMAX_SAMPLE  = 10
+        local MY_CANDIDATES   = 100
+
+        -- 탐색 마감 시각 (tick 기준), 0 = 제한 없음
+        local searchDeadline  = 0
 
         -- startChar 기준 후보 단어 최대 maxN개 수집 (점수 내림차순)
         -- extraFilter: function(word)→bool  추가 필터링 (nil = 없음)
@@ -1769,6 +1822,11 @@ startBot = function()
         --   기타     wordScore 기반
         -- ───────────────────────────────────────────
         local function negamax(char, depth, alpha, beta)
+                -- 탐색 시간 초과 체크 (searchDeadline == 0 이면 무제한)
+                if searchDeadline > 0 and tick() >= searchDeadline then
+                        return 0  -- 시간 초과 시 중립값 반환 → 상위에서 현재까지 최선값 유지
+                end
+
                 local cands = collectCandidates(char, MINIMAX_SAMPLE)
 
                 -- 응수 불가 = 현재 플레이어 패배
@@ -1789,6 +1847,9 @@ startBot = function()
                 local best = -math.huge
 
                 for _, word in ipairs(cands) do
+                        -- 루프 안에서도 시간 초과 체크
+                        if searchDeadline > 0 and tick() >= searchDeadline then break end
+
                         local ws = wordScore[word] or 0
                         local lc = lastChar(word)
 
@@ -1801,7 +1862,6 @@ startBot = function()
                                 val = 999999
                         else
                                 -- 상대 관점 negamax → negate 해서 내 관점으로 변환
-                                -- 한방단어일수록 wordScore 높음 → 경로 점수에 반영
                                 val = ws + (- negamax(lc, depth - 1, -beta, -alpha))
                         end
 
@@ -1819,6 +1879,21 @@ startBot = function()
         -- 노멀 모드: 첫 수에서 즉사단어 제외 → 상대가 받아치기 힘든 세팅 단어 우선
         -- 이후 탐색 트리에서 두 번째 수로 한방단어 도달 경로를 탐색
         local function findMiniMaxWord(startChar, rootFilter)
+                -- 탐색 시작 직전에 GUI 박스에서 설정값 읽기
+                local depth, sample, myCandN, timeLim = readMMSettings()
+                MINIMAX_DEPTH  = depth
+                MINIMAX_SAMPLE = sample
+                MY_CANDIDATES  = myCandN
+
+                -- 탐색 마감 시각 설정 (0 = 무제한)
+                if timeLim > 0 then
+                        searchDeadline = tick() + timeLim
+                        status.Text = string.format("미니맥스 탐색중 (깊이%d / 후보%d / %.1f초)", depth, sample, timeLim)
+                else
+                        searchDeadline = 0
+                        status.Text = string.format("미니맥스 탐색중 (깊이%d / 후보%d / 무제한)", depth, sample)
+                end
+
                 local myCands = collectCandidates(startChar, MY_CANDIDATES, rootFilter)
 
                 -- rootFilter 적용 후 후보가 없으면 필터 없이 재수집 (안전장치)
@@ -1833,19 +1908,18 @@ startBot = function()
                 local beta     =  math.huge
 
                 for _, word in ipairs(myCands) do
+                        -- 루트 레벨에서도 시간 초과 체크
+                        if searchDeadline > 0 and tick() >= searchDeadline then break end
+
                         local ws = wordScore[word] or 0
                         local lc = lastChar(word)
 
-                        -- 즉사 체크 (탐색 없이 바로 확정)
-                        -- 노멀 모드에서는 rootFilter로 이미 즉사단어가 걸러져 있으나
-                        -- 필터 없이 재수집한 경우 즉사가 나올 수 있으므로 유지
                         local opFirst = collectCandidates(lc, 1)
                         local eval
 
                         if #opFirst == 0 then
                                 eval = 999999 + ws
                         else
-                                -- 내 수는 이미 선택, 다음은 상대 턴부터 negamax
                                 eval = ws + (- negamax(lc, MINIMAX_DEPTH - 1, -beta, -alpha))
                         end
 
@@ -2016,4 +2090,3 @@ startBot = function()
 
 
 end -- startBot
-
