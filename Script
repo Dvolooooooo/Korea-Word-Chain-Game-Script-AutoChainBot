@@ -225,7 +225,7 @@ bgBtn.Parent = frame
 Instance.new("UICorner", bgBtn)
 
 local bgPopup = Instance.new("Frame")
-bgPopup.Size = UDim2.new(0, 242, 0, 112)
+bgPopup.Size = UDim2.new(0, 242, 0, 270)
 bgPopup.Position = UDim2.new(0, 4, 0, 34)
 bgPopup.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
 bgPopup.BorderSizePixel = 0
@@ -267,9 +267,9 @@ local bgApplyBtn = Instance.new("TextButton")
 bgApplyBtn.Size = UDim2.new(0, 106, 0, 26)
 bgApplyBtn.Position = UDim2.new(0, 7, 0, 62)
 bgApplyBtn.BackgroundColor3 = Color3.fromRGB(45, 145, 85)
-bgApplyBtn.Text = "적용"
+bgApplyBtn.Text = "저장 & 적용"
 bgApplyBtn.Font = Enum.Font.GothamBold
-bgApplyBtn.TextSize = 13
+bgApplyBtn.TextSize = 12
 bgApplyBtn.TextColor3 = Color3.new(1, 1, 1)
 bgApplyBtn.AutoButtonColor = true
 bgApplyBtn.ZIndex = 16
@@ -301,19 +301,180 @@ bgStatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 bgStatusLbl.ZIndex = 16
 bgStatusLbl.Parent = bgPopup
 
-local BG_JSON    = "끝말봇_bg.json"
-local bgImgCount = 0
+-- 구분선
+local bgDivider = Instance.new("Frame")
+bgDivider.Size = UDim2.new(1, -14, 0, 1)
+bgDivider.Position = UDim2.new(0, 7, 0, 110)
+bgDivider.BackgroundColor3 = Color3.fromRGB(60, 70, 100)
+bgDivider.BorderSizePixel = 0
+bgDivider.ZIndex = 16
+bgDivider.Parent = bgPopup
+
+local bgListTitle = Instance.new("TextLabel")
+bgListTitle.Size = UDim2.new(1, -14, 0, 16)
+bgListTitle.Position = UDim2.new(0, 7, 0, 114)
+bgListTitle.BackgroundTransparency = 1
+bgListTitle.Text = "저장된 배경 목록"
+bgListTitle.Font = Enum.Font.GothamBold
+bgListTitle.TextSize = 11
+bgListTitle.TextColor3 = Color3.fromRGB(130, 160, 220)
+bgListTitle.TextXAlignment = Enum.TextXAlignment.Left
+bgListTitle.ZIndex = 16
+bgListTitle.Parent = bgPopup
+
+-- 목록 ScrollingFrame
+local bgScroll = Instance.new("ScrollingFrame")
+bgScroll.Size = UDim2.new(1, -14, 0, 132)
+bgScroll.Position = UDim2.new(0, 7, 0, 132)
+bgScroll.BackgroundColor3 = Color3.fromRGB(14, 14, 22)
+bgScroll.BorderSizePixel = 0
+bgScroll.ScrollBarThickness = 4
+bgScroll.ScrollBarImageColor3 = Color3.fromRGB(70, 110, 200)
+bgScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+bgScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+bgScroll.ZIndex = 16
+bgScroll.Parent = bgPopup
+Instance.new("UICorner", bgScroll)
+local bgScrollLayout = Instance.new("UIListLayout", bgScroll)
+bgScrollLayout.Padding = UDim.new(0, 3)
+bgScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- PNG 파일 기반 배경 목록
+-- 끝말봇_bg_1.png, 끝말봇_bg_2.png … 를 직접 스캔해 리스트 구성
+local BG_CURRENT_FILE = "끝말봇_bg_current.txt"
+local bgImgCount      = 0    -- 다음 저장 번호 추적
+local bgFiles         = {}   -- {"끝말봇_bg_1.png", "끝말봇_bg_2.png", ...}
+local bgCurrentFname  = ""   -- 현재 적용된 PNG 파일명
 
 -- content:// (안드로이드 로컬) vs HTTP URL 자동 판별
 local function fetchBytes(url)
         if url:sub(1, 10) == "content://" then
-                -- 안드로이드 로컬 파일 — 실행기의 readfile() 로 직접 읽기
                 return readfile(url)
         else
                 return game:HttpGet(url)
         end
 end
 
+-- 현재 파일명 저장
+local function saveCurrentFname()
+        pcall(function() writefile(BG_CURRENT_FILE, bgCurrentFname) end)
+end
+
+-- 목록 UI 갱신
+local function refreshBgList()
+        for _, ch in ipairs(bgScroll:GetChildren()) do
+                if ch:IsA("Frame") or ch:IsA("TextLabel") then ch:Destroy() end
+        end
+
+        if #bgFiles == 0 then
+                local empty = Instance.new("TextLabel")
+                empty.Size = UDim2.new(1, 0, 0, 28)
+                empty.BackgroundTransparency = 1
+                empty.Text = "저장된 배경 없음"
+                empty.Font = Enum.Font.Code
+                empty.TextSize = 10
+                empty.TextColor3 = Color3.fromRGB(100, 100, 120)
+                empty.ZIndex = 17
+                empty.LayoutOrder = 1
+                empty.Parent = bgScroll
+                return
+        end
+
+        for i, fname in ipairs(bgFiles) do
+                local isCurrent = (fname == bgCurrentFname)
+
+                local row = Instance.new("Frame")
+                row.Size = UDim2.new(1, 0, 0, 30)
+                row.BackgroundColor3 = isCurrent
+                        and Color3.fromRGB(28, 52, 88)
+                        or  Color3.fromRGB(22, 22, 34)
+                row.BorderSizePixel = 0
+                row.ZIndex = 17
+                row.LayoutOrder = i
+                row.Parent = bgScroll
+                Instance.new("UICorner", row)
+
+                -- 파일 번호 라벨 (끝말봇_bg_N.png → "배경 N")
+                local num = fname:match("_(%d+)%.png$") or tostring(i)
+                local nameLbl = Instance.new("TextLabel")
+                nameLbl.Size = UDim2.new(1, -74, 1, 0)
+                nameLbl.Position = UDim2.new(0, 6, 0, 0)
+                nameLbl.BackgroundTransparency = 1
+                nameLbl.Text = (isCurrent and "▶ " or "  ") .. "배경 " .. num
+                nameLbl.Font = Enum.Font.GothamBold
+                nameLbl.TextSize = 11
+                nameLbl.TextColor3 = isCurrent
+                        and Color3.fromRGB(100, 200, 255)
+                        or  Color3.fromRGB(170, 170, 195)
+                nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+                nameLbl.ZIndex = 18
+                nameLbl.Parent = row
+
+                -- 적용 버튼 (재다운로드 없이 getcustomasset 바로 사용)
+                local applyRowBtn = Instance.new("TextButton")
+                applyRowBtn.Size = UDim2.new(0, 34, 0, 22)
+                applyRowBtn.Position = UDim2.new(1, -70, 0.5, -11)
+                applyRowBtn.BackgroundColor3 = Color3.fromRGB(30, 115, 65)
+                applyRowBtn.Text = "적용"
+                applyRowBtn.Font = Enum.Font.GothamBold
+                applyRowBtn.TextSize = 10
+                applyRowBtn.TextColor3 = Color3.new(1, 1, 1)
+                applyRowBtn.AutoButtonColor = true
+                applyRowBtn.ZIndex = 18
+                applyRowBtn.Parent = row
+                Instance.new("UICorner", applyRowBtn)
+
+                -- 삭제 버튼 (PNG 파일 삭제 + 목록 제거)
+                local delRowBtn = Instance.new("TextButton")
+                delRowBtn.Size = UDim2.new(0, 26, 0, 22)
+                delRowBtn.Position = UDim2.new(1, -32, 0.5, -11)
+                delRowBtn.BackgroundColor3 = Color3.fromRGB(130, 40, 40)
+                delRowBtn.Text = "X"
+                delRowBtn.Font = Enum.Font.GothamBold
+                delRowBtn.TextSize = 11
+                delRowBtn.TextColor3 = Color3.new(1, 1, 1)
+                delRowBtn.AutoButtonColor = true
+                delRowBtn.ZIndex = 18
+                delRowBtn.Parent = row
+                Instance.new("UICorner", delRowBtn)
+
+                local capturedFname = fname
+                local capturedIdx   = i
+
+                applyRowBtn.MouseButton1Click:Connect(function()
+                        local ok = pcall(function()
+                                bgImage.Image   = getcustomasset(capturedFname)
+                                bgImage.Visible = true
+                        end)
+                        if ok then
+                                bgCurrentFname = capturedFname
+                                saveCurrentFname()
+                                refreshBgList()
+                                bgStatusLbl.TextColor3 = Color3.fromRGB(70, 220, 110)
+                                bgStatusLbl.Text = "v 적용 완료"
+                        else
+                                bgStatusLbl.TextColor3 = Color3.fromRGB(230, 70, 70)
+                                bgStatusLbl.Text = "x 파일 불러오기 실패"
+                        end
+                end)
+
+                delRowBtn.MouseButton1Click:Connect(function()
+                        pcall(function() delfile(capturedFname) end)
+                        table.remove(bgFiles, capturedIdx)
+                        if bgCurrentFname == capturedFname then
+                                bgCurrentFname = ""
+                                bgImage.Visible = false
+                                bgImage.Image   = ""
+                                saveCurrentFname()
+                        end
+                        refreshBgList()
+                        bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
+                        bgStatusLbl.Text = "파일 삭제됨"
+                end)
+        end
+end
+
+-- URL 다운로드 → PNG 저장 → 목록 추가 → 적용
 local function applyBg(url)
         bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
         bgStatusLbl.Text = "다운로드 중..."
@@ -321,14 +482,18 @@ local function applyBg(url)
         local fname = "끝말봇_bg_" .. bgImgCount .. ".png"
         local ok = pcall(function()
                 writefile(fname, fetchBytes(url))
-                bgImage.Image = getcustomasset(fname)
+                bgImage.Image   = getcustomasset(fname)
                 bgImage.Visible = true
-                writefile(BG_JSON, '{"url":"' .. url:gsub('"', "'") .. '"}')
         end)
         if ok then
                 bgStatusLbl.TextColor3 = Color3.fromRGB(70, 220, 110)
-                bgStatusLbl.Text = "v 적용 완료"
+                bgStatusLbl.Text = "v 저장 & 적용 완료"
+                table.insert(bgFiles, fname)
+                bgCurrentFname = fname
+                saveCurrentFname()
+                refreshBgList()
         else
+                bgImgCount = bgImgCount - 1   -- 실패 시 카운터 롤백
                 bgStatusLbl.TextColor3 = Color3.fromRGB(230, 70, 70)
                 bgStatusLbl.Text = "x 실패 — URL 확인 필요"
         end
@@ -347,25 +512,37 @@ end)
 
 bgClearBtn.MouseButton1Click:Connect(function()
         bgImage.Visible = false
-        bgImage.Image = ""
-        pcall(function() writefile(BG_JSON, '{"url":""}') end)
+        bgImage.Image   = ""
+        bgCurrentFname  = ""
+        saveCurrentFname()
+        refreshBgList()
         bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
         bgStatusLbl.Text = "배경 제거됨"
 end)
 
+-- 시작 시: 끝말봇_bg_N.png 파일 스캔 (최대 200번까지)
 pcall(function()
-        if isfile(BG_JSON) then
-                local raw = readfile(BG_JSON)
-                local url = raw:match('"url"%s*:%s*"(.-)"')
-                if url and url ~= "" then
-                        bgImgCount = bgImgCount + 1
-                        local fname = "끝말봇_bg_" .. bgImgCount .. ".png"
-                        writefile(fname, fetchBytes(url))
-                        bgImage.Image = getcustomasset(fname)
+        for n = 1, 200 do
+                local fname = "끝말봇_bg_" .. n .. ".png"
+                if isfile(fname) then
+                        table.insert(bgFiles, fname)
+                        bgImgCount = n   -- 다음 저장 번호를 마지막 발견 번호로 맞춤
+                else
+                        -- 5개 연속 없으면 더 이상 없다고 판단하고 중단
+                        if n > bgImgCount + 5 then break end
+                end
+        end
+        -- 마지막 적용 파일 복원
+        if isfile(BG_CURRENT_FILE) then
+                local saved = readfile(BG_CURRENT_FILE):match("^%s*(.-)%s*$")
+                if saved and saved ~= "" and isfile(saved) then
+                        bgCurrentFname  = saved
+                        bgImage.Image   = getcustomasset(saved)
                         bgImage.Visible = true
                 end
         end
 end)
+refreshBgList()
 
 
 bgBtn.MouseButton1Click:Connect(function()
