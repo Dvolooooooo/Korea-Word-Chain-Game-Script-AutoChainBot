@@ -28,7 +28,7 @@ gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = CoreGui
 
-local FRAME_H_CLOSED = 497
+local FRAME_H_CLOSED = 530
 local FRAME_H_OPEN   = 797
 local searchVisible = false
 local maxRoute = 2
@@ -973,6 +973,17 @@ local autoReplyBtn = makeButton(
 )
 autoReplyBtn.TextSize = 13
 autoReplyBtn.ZIndex = 3
+
+-- 트롤모드 (턴 무관, TextBox 변화 감지 즉시 입력)
+local trollBtn = makeButton(
+        "😈 트롤모드  OFF",
+        UDim2.new(1, -20, 0, 30),
+        UDim2.new(0, 10, 0, 488),
+        Color3.fromRGB(80, 30, 80),
+        frame
+)
+trollBtn.TextSize = 13
+trollBtn.ZIndex = 3
 
 local rerollBtn = makeButton(
         "재생성",
@@ -2364,6 +2375,69 @@ startBot = function()
                         task.spawn(function()
                                 doAutoInput()
                                 isReplying = false
+                        end)
+                end
+        end)
+
+
+        ---
+
+        -- 트롤모드 (턴 무관, TypeFrame.TextBox 변화 감지 즉시 입력)
+
+        -- 트롤모드: 자동답변과 완전히 같은 구조,
+        -- 단 isMyTurn() 체크 없이 누구 턴이든 TimeLeftLabel 변화 감지 즉시 실행
+
+        local trollMode       = false
+        local isTrolling      = false
+        local lastTrollTurner = nil   -- 직전 턴 주인 이름 (중복 실행 방지)
+
+        trollBtn.MouseButton1Click:Connect(function()
+                trollMode = not trollMode
+                if trollMode then
+                        trollBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 180)
+                        trollBtn.Text = "😈 트롤모드  ON"
+                        status.Text = "트롤모드 켜짐 — 모든 턴 감지 중"
+                        lastTrollTurner = nil
+                else
+                        trollBtn.BackgroundColor3 = Color3.fromRGB(80, 30, 80)
+                        trollBtn.Text = "😈 트롤모드  OFF"
+                        status.Text = "트롤모드 꺼짐"
+                end
+        end)
+
+        -- 현재 턴 주인 이름 반환 (누구든 상관 없음)
+        local function getCurrentTurner()
+                local gui = player.PlayerGui
+                local gameGui = gui:FindFirstChild("GameGui")
+                if not gameGui then return nil end
+                local lbl = gameGui:FindFirstChild("TimeLeftLabel")
+                if not lbl then return nil end
+                return lbl.Text:match("^(.-)의 차례")
+        end
+
+        -- 폴링 루프 (자동답변과 동일 구조, 0.2초마다 체크)
+        task.spawn(function()
+                while true do
+                        task.wait(0.2)
+
+                        if not trollMode or isTrolling then continue end
+
+                        local ok, turner = pcall(getCurrentTurner)
+                        if not ok or not turner then
+                                lastTrollTurner = nil
+                                continue
+                        end
+
+                        -- 같은 사람 턴이면 스킵 (이미 이번 턴에 답했음)
+                        if turner == lastTrollTurner then continue end
+
+                        -- 새 턴 감지 → 즉시 실행
+                        lastTrollTurner = turner
+                        isTrolling = true
+
+                        task.spawn(function()
+                                doAutoInput()
+                                isTrolling = false
                         end)
                 end
         end)
