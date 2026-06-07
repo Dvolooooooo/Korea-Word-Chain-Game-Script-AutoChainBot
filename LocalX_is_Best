@@ -1,4 +1,3 @@
-
 -- 끝말잇기 자동봇 FINAL ULTIMATE
 -- 드래그 / 모바일 / 재생성 / 공격단어 fallback / 스마트 두음법칙 / 사전검색 / 미니맥스 전부 포함
 
@@ -7,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
+local ContentProvider = game:GetService("ContentProvider")
 
 local player = Players.LocalPlayer
 
@@ -57,6 +57,69 @@ bgImage.Image = ""
 bgImage.Visible = false
 bgImage.Parent = frame
 Instance.new("UICorner", bgImage)
+
+local bgVideo = Instance.new("VideoFrame")
+bgVideo.Size = UDim2.new(1, 0, 1, 0)
+bgVideo.Position = UDim2.new(0, 0, 0, 0)
+bgVideo.BackgroundTransparency = 1
+bgVideo.ZIndex = 1
+bgVideo.Visible = false
+bgVideo.Looped = true
+bgVideo.Volume = 0  -- 소리 끔
+bgVideo.Parent = frame
+Instance.new("UICorner", bgVideo)
+
+
+
+---
+
+-- 버튼 불투명도 설정
+-- 왼쪽으로 줄이면 버튼이 투명해지고, 오른쪽으로 올리면 불투명해집니다.
+
+local BUTTON_OPACITY_FILE = "끝말봇_button_opacity.txt"
+local buttonOpacity = 1
+
+pcall(function()
+        if isfile and isfile(BUTTON_OPACITY_FILE) then
+                local savedOpacity = tonumber(readfile(BUTTON_OPACITY_FILE))
+                if savedOpacity then
+                        buttonOpacity = math.clamp(savedOpacity, 0, 1)
+                end
+        end
+end)
+
+local function isOpacityControl(obj)
+        local ok, value = pcall(function()
+                return obj:GetAttribute("OpacityControl")
+        end)
+        return ok and value == true
+end
+
+local function markOpacityControl(obj)
+        pcall(function()
+                obj:SetAttribute("OpacityControl", true)
+        end)
+        return obj
+end
+
+local function applyButtonOpacity()
+        local transparency = 1 - math.clamp(buttonOpacity, 0, 1)
+        for _, obj in ipairs(gui:GetDescendants()) do
+                if obj:IsA("TextButton") and not isOpacityControl(obj) then
+                        obj.BackgroundTransparency = transparency
+                end
+        end
+end
+
+gui.DescendantAdded:Connect(function(obj)
+        if obj:IsA("TextButton") then
+                task.defer(function()
+                        if not isOpacityControl(obj) then
+                                obj.BackgroundTransparency = 1 - math.clamp(buttonOpacity, 0, 1)
+                        end
+                end)
+        end
+end)
 
 
 ---
@@ -203,6 +266,7 @@ local function makeButton(text, size, pos, color, parent)
         btn.Active = true
         btn.ZIndex = 3
         btn.Parent = parent
+        btn.BackgroundTransparency = 1 - math.clamp(buttonOpacity, 0, 1)
         Instance.new("UICorner", btn)
         return btn
 end
@@ -396,7 +460,7 @@ local function refreshBgList()
                 Instance.new("UICorner", row)
 
                 -- 파일 번호 라벨 (끝말봇_bg_N.png → "배경 N")
-                local num = fname:match("_(%d+)%.png$") or tostring(i)
+                local num = fname:match("_(%d+)%.[^%.]+$") or tostring(i)
                 local nameLbl = Instance.new("TextLabel")
                 nameLbl.Size = UDim2.new(1, -74, 1, 0)
                 nameLbl.Position = UDim2.new(0, 6, 0, 0)
@@ -444,8 +508,17 @@ local function refreshBgList()
 
                 applyRowBtn.MouseButton1Click:Connect(function()
                         local ok = pcall(function()
-                                bgImage.Image   = getcustomasset(capturedFname)
-                                bgImage.Visible = true
+                                local asset = getcustomasset(capturedFname)
+                                local ext = capturedFname:lower():match("%.([^%.]+)$")
+                                bgImage.Visible = false
+                                bgVideo.Visible = false
+                                bgVideo:Pause()
+                                if ext == "mp4" or ext == "webm" or ext == "mov" then
+                                        safeLoadVideo(bgVideo, asset)
+                                else
+                                        bgImage.Image = asset
+                                        bgImage.Visible = true
+                                end
                         end)
                         if ok then
                                 bgCurrentFname = capturedFname
@@ -480,11 +553,23 @@ local function applyBg(url)
         bgStatusLbl.TextColor3 = Color3.fromRGB(200, 160, 60)
         bgStatusLbl.Text = "다운로드 중..."
         bgImgCount = bgImgCount + 1
-        local fname = "끝말봇_bg_" .. bgImgCount .. ".png"
+        
+        local ext = url:lower():match("%.([^%.]+)$") or "png"
+        if ext:find("?") then ext = ext:split("?")[1] end
+        local fname = "끝말봇_bg_" .. bgImgCount .. "." .. ext
+        
         local ok = pcall(function()
                 writefile(fname, fetchBytes(url))
-                bgImage.Image   = getcustomasset(fname)
-                bgImage.Visible = true
+                local asset = getcustomasset(fname)
+                bgImage.Visible = false
+                bgVideo.Visible = false
+                bgVideo:Pause()
+                if ext == "mp4" or ext == "webm" or ext == "mov" then
+                                        safeLoadVideo(bgVideo, asset)
+                else
+                        bgImage.Image = asset
+                        bgImage.Visible = true
+                end
         end)
         if ok then
                 bgStatusLbl.TextColor3 = Color3.fromRGB(70, 220, 110)
@@ -524,12 +609,19 @@ end)
 -- 시작 시: 끝말봇_bg_N.png 파일 스캔 (최대 200번까지)
 pcall(function()
         for n = 1, 200 do
-                local fname = "끝말봇_bg_" .. n .. ".png"
-                if isfile(fname) then
-                        table.insert(bgFiles, fname)
-                        bgImgCount = n   -- 다음 저장 번호를 마지막 발견 번호로 맞춤
-                else
-                        -- 5개 연속 없으면 더 이상 없다고 판단하고 중단
+                local found = false
+                local exts = {".png", ".jpg", ".jpeg", ".mp4", ".webm", ".mov"}
+                for _, ext in ipairs(exts) do
+                        local fname = "끝말봇_bg_" .. n .. ext
+                        if isfile(fname) then
+                                table.insert(bgFiles, fname)
+                                bgImgCount = n
+                                found = true
+                                break
+                        end
+                end
+                
+                if not found then
                         if n > bgImgCount + 5 then break end
                 end
         end
@@ -538,8 +630,19 @@ pcall(function()
                 local saved = readfile(BG_CURRENT_FILE):match("^%s*(.-)%s*$")
                 if saved and saved ~= "" and isfile(saved) then
                         bgCurrentFname  = saved
-                        bgImage.Image   = getcustomasset(saved)
-                        bgImage.Visible = true
+                        local asset = getcustomasset(saved)
+                        local ext = saved:lower():match("%.([^%.]+)$")
+                        
+                        bgImage.Visible = false
+                        bgVideo.Visible = false
+                        bgVideo:Pause()
+
+                        if ext == "mp4" or ext == "webm" or ext == "mov" then
+                                        safeLoadVideo(bgVideo, asset)
+                        else
+                                bgImage.Image = asset
+                                bgImage.Visible = true
+                        end
                 end
         end
 end)
@@ -559,8 +662,8 @@ end)
 -- 제목
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -96, 0, 30)
-title.Position = UDim2.new(0, 34, 0, 0)
+title.Size = UDim2.new(1, -126, 0, 30)
+title.Position = UDim2.new(0, 64, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "끝말잇기 자동봇"
 title.Font = Enum.Font.Code
@@ -581,6 +684,148 @@ hamburgerBtn.AutoButtonColor = true
 hamburgerBtn.ZIndex = 4
 hamburgerBtn.Parent = frame
 Instance.new("UICorner", hamburgerBtn)
+
+---
+
+-- 버튼 불투명도 슬라이더
+
+local opacityBtn = Instance.new("TextButton")
+opacityBtn.Size = UDim2.new(0, 26, 0, 26)
+opacityBtn.Position = UDim2.new(0, 32, 0, 4)
+opacityBtn.BackgroundColor3 = Color3.fromRGB(75, 65, 110)
+opacityBtn.Text = "OP"
+opacityBtn.Font = Enum.Font.GothamBold
+opacityBtn.TextSize = 10
+opacityBtn.TextColor3 = Color3.fromRGB(220, 210, 255)
+opacityBtn.AutoButtonColor = true
+opacityBtn.ZIndex = 5
+markOpacityControl(opacityBtn)
+opacityBtn.Parent = frame
+Instance.new("UICorner", opacityBtn)
+
+local opacityPopup = Instance.new("Frame")
+opacityPopup.Size = UDim2.new(0, 242, 0, 76)
+opacityPopup.Position = UDim2.new(0, 4, 0, 306)
+opacityPopup.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
+opacityPopup.BorderSizePixel = 0
+opacityPopup.ZIndex = 15
+opacityPopup.Visible = false
+opacityPopup.Parent = frame
+Instance.new("UICorner", opacityPopup)
+do local s = Instance.new("UIStroke", opacityPopup); s.Color = Color3.fromRGB(120, 95, 210); s.Thickness = 1 end
+
+local opacityPercentLbl = Instance.new("TextLabel")
+opacityPercentLbl.Size = UDim2.new(1, -14, 0, 22)
+opacityPercentLbl.Position = UDim2.new(0, 7, 0, 6)
+opacityPercentLbl.BackgroundTransparency = 1
+opacityPercentLbl.Text = "버튼 불투명도: 100%"
+opacityPercentLbl.Font = Enum.Font.GothamBold
+opacityPercentLbl.TextSize = 12
+opacityPercentLbl.TextColor3 = Color3.fromRGB(200, 190, 255)
+opacityPercentLbl.TextXAlignment = Enum.TextXAlignment.Left
+opacityPercentLbl.ZIndex = 16
+opacityPercentLbl.Parent = opacityPopup
+
+local opacityHintLbl = Instance.new("TextLabel")
+opacityHintLbl.Size = UDim2.new(1, -14, 0, 14)
+opacityHintLbl.Position = UDim2.new(0, 7, 0, 25)
+opacityHintLbl.BackgroundTransparency = 1
+opacityHintLbl.Text = "왼쪽: 낮음  /  오른쪽: 높음"
+opacityHintLbl.Font = Enum.Font.Code
+opacityHintLbl.TextSize = 10
+opacityHintLbl.TextColor3 = Color3.fromRGB(130, 130, 155)
+opacityHintLbl.TextXAlignment = Enum.TextXAlignment.Left
+opacityHintLbl.ZIndex = 16
+opacityHintLbl.Parent = opacityPopup
+
+local opacityBar = Instance.new("Frame")
+opacityBar.Size = UDim2.new(1, -28, 0, 8)
+opacityBar.Position = UDim2.new(0, 14, 0, 50)
+opacityBar.BackgroundColor3 = Color3.fromRGB(45, 45, 58)
+opacityBar.BorderSizePixel = 0
+opacityBar.Active = true
+opacityBar.ZIndex = 16
+opacityBar.Parent = opacityPopup
+Instance.new("UICorner", opacityBar)
+
+local opacityFill = Instance.new("Frame")
+opacityFill.Size = UDim2.new(buttonOpacity, 0, 1, 0)
+opacityFill.Position = UDim2.new(0, 0, 0, 0)
+opacityFill.BackgroundColor3 = Color3.fromRGB(125, 95, 230)
+opacityFill.BorderSizePixel = 0
+opacityFill.ZIndex = 17
+opacityFill.Parent = opacityBar
+Instance.new("UICorner", opacityFill)
+
+local opacityKnob = Instance.new("Frame")
+opacityKnob.Size = UDim2.new(0, 14, 0, 18)
+opacityKnob.Position = UDim2.new(buttonOpacity, -7, 0.5, -9)
+opacityKnob.BackgroundColor3 = Color3.fromRGB(230, 230, 255)
+opacityKnob.BorderSizePixel = 0
+opacityKnob.Active = true
+opacityKnob.ZIndex = 18
+opacityKnob.Parent = opacityBar
+Instance.new("UICorner", opacityKnob)
+
+local function saveButtonOpacity()
+        pcall(function()
+                writefile(BUTTON_OPACITY_FILE, tostring(buttonOpacity))
+        end)
+end
+
+local function updateOpacitySlider()
+        local pct = math.floor(buttonOpacity * 100 + 0.5)
+        opacityPercentLbl.Text = "버튼 불투명도: " .. pct .. "%"
+        opacityFill.Size = UDim2.new(buttonOpacity, 0, 1, 0)
+        opacityKnob.Position = UDim2.new(buttonOpacity, -7, 0.5, -9)
+end
+
+local function setButtonOpacityFromInput(input, shouldSave)
+        local barX = opacityBar.AbsolutePosition.X
+        local barW = math.max(opacityBar.AbsoluteSize.X, 1)
+        buttonOpacity = math.clamp((input.Position.X - barX) / barW, 0, 1)
+        applyButtonOpacity()
+        updateOpacitySlider()
+        if shouldSave then
+                saveButtonOpacity()
+        end
+end
+
+local opacityDragging = false
+local function beginOpacityDrag(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch then
+                opacityDragging = true
+                setButtonOpacityFromInput(input, true)
+                input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                                opacityDragging = false
+                                saveButtonOpacity()
+                        end
+                end)
+        end
+end
+
+opacityBar.InputBegan:Connect(beginOpacityDrag)
+opacityKnob.InputBegan:Connect(beginOpacityDrag)
+
+UserInputService.InputChanged:Connect(function(input)
+        if opacityDragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+                or input.UserInputType == Enum.UserInputType.Touch) then
+                setButtonOpacityFromInput(input, false)
+        end
+end)
+
+opacityBtn.MouseButton1Click:Connect(function()
+        opacityPopup.Visible = not opacityPopup.Visible
+        if opacityPopup.Visible then
+                updateOpacitySlider()
+        end
+end)
+
+applyButtonOpacity()
+updateOpacitySlider()
+
 
 local status = Instance.new("TextLabel")
 status.Size = UDim2.new(1, -10, 0, 25)
@@ -1240,7 +1485,30 @@ local files = {
         {name = "우리말샘 단어목록.txt", priority = 4},
 }
 
+
+local function safeLoadVideo(videoFrame, asset)
+        task.spawn(function()
+                pcall(function()
+                        videoFrame.Visible = false
+                        videoFrame:Pause()
+                        videoFrame.Video = ""
+                        task.wait(0.1)
+                        videoFrame.Video = asset
+                        
+                        -- 로드 시도 (PreloadAsync는 실패할 수 있으므로 pcall)
+                        pcall(function()
+                                ContentProvider:PreloadAsync({videoFrame})
+                        end)
+                        
+                        videoFrame.Visible = true
+                        videoFrame:Play()
+                end)
+        end)
+end
+
 startBot = function()
+
+        local trollMode = false
 
         local mr = tonumber(routeBox.Text)
         maxRoute = (mr and mr >= 1) and math.min(math.floor(mr), 5) or 2
@@ -2222,10 +2490,12 @@ startBot = function()
 
         -- 제출
 
-        local function submitWord(word)
+        local function submitWord(word, skipTyping)
                 status.Text = "입력중: " .. word
-                typingEffect(word)
-                task.wait(0.1)
+                if not skipTyping then
+                        typingEffect(word)
+                        task.wait(0.1)
+                end
                 status.Text = "전송: " .. word
                 ReplicatedStorage
                         :WaitForChild("Remotes")
@@ -2259,7 +2529,7 @@ startBot = function()
                         local word = generateWord(char)
 
                         if word then
-                                submitWord(word)
+                                submitWord(word, trollMode)
                         else
                                 status.Text = "단어 없음"
                         end
@@ -2290,7 +2560,7 @@ startBot = function()
                 end
                 local word = generateWord(lastStartChar)
                 if word then
-                        submitWord(word)
+                        submitWord(word, false)
                 else
                         status.Text = "재생성 실패"
                 end
@@ -2388,7 +2658,7 @@ startBot = function()
         -- 트롤모드: 자동답변과 완전히 같은 구조,
         -- 단 isMyTurn() 체크 없이 누구 턴이든 TimeLeftLabel 변화 감지 즉시 실행
 
-        local trollMode       = false
+        -- trollMode moved up
         local isTrolling      = false
         local lastTrollTurner = nil   -- 직전 턴 주인 이름 (중복 실행 방지)
 
