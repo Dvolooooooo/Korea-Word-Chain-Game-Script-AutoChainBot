@@ -25,6 +25,529 @@ end
 local isMobile = UserInputService.TouchEnabled
 local isPC = UserInputService.KeyboardEnabled and UserInputService.MouseEnabled
 
+-- UI 선택 화면
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+pcall(function()
+    if CoreGui:FindFirstChild("끄글봇_선택") then
+        CoreGui["끄글봇_선택"]:Destroy()
+    end
+end)
+
+local choiceGui = Instance.new("ScreenGui")
+choiceGui.Name = "끄글봇_선택"
+choiceGui.ResetOnSpawn = false
+choiceGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+choiceGui.Parent = CoreGui
+
+local choiceFrame = Instance.new("Frame")
+choiceFrame.Size = UDim2.new(0, 320, 0, 280)
+choiceFrame.Position = UDim2.new(0.5, -160, 0.5, -140)
+choiceFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+choiceFrame.BorderSizePixel = 0
+choiceFrame.ZIndex = 20
+choiceFrame.Parent = choiceGui
+Instance.new("UICorner", choiceFrame)
+do local s = Instance.new("UIStroke", choiceFrame); s.Color = Color3.fromRGB(70, 110, 220); s.Thickness = 2 end
+
+local choiceTitle = Instance.new("TextLabel")
+choiceTitle.Size = UDim2.new(1, 0, 0, 45)
+choiceTitle.Position = UDim2.new(0, 0, 0, 15)
+choiceTitle.BackgroundTransparency = 1
+choiceTitle.Text = "끝말잇기 자동화 스크립트"
+choiceTitle.Font = Enum.Font.GothamBold
+choiceTitle.TextSize = 20
+choiceTitle.TextColor3 = Color3.new(1, 1, 1)
+choiceTitle.ZIndex = 21
+choiceTitle.Parent = choiceFrame
+
+local choiceSub = Instance.new("TextLabel")
+choiceSub.Size = UDim2.new(1, -20, 0, 20)
+choiceSub.Position = UDim2.new(0, 10, 0, 58)
+choiceSub.BackgroundTransparency = 1
+choiceSub.Text = "사용할 UI를 선택하세요"
+choiceSub.Font = Enum.Font.Code
+choiceSub.TextSize = 13
+choiceSub.TextColor3 = Color3.fromRGB(140, 150, 190)
+choiceSub.ZIndex = 21
+choiceSub.Parent = choiceFrame
+
+local uiChoice = nil
+
+local libBtn = Instance.new("TextButton")
+libBtn.Size = UDim2.new(1, -30, 0, 70)
+libBtn.Position = UDim2.new(0, 15, 0, 90)
+libBtn.BackgroundColor3 = Color3.fromRGB(45, 100, 180)
+libBtn.Text = "🎨 라이브러리 UI\n더 간편하고 깔끔한 인터페이스"
+libBtn.Font = Enum.Font.GothamBold
+libBtn.TextSize = 14
+libBtn.TextColor3 = Color3.new(1, 1, 1)
+libBtn.AutoButtonColor = true
+libBtn.ZIndex = 21
+libBtn.TextWrapped = true
+libBtn.Parent = choiceFrame
+Instance.new("UICorner", libBtn)
+
+local customBtn = Instance.new("TextButton")
+customBtn.Size = UDim2.new(1, -30, 0, 70)
+customBtn.Position = UDim2.new(0, 15, 0, 175)
+customBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+customBtn.Text = "🛠 직접 만든 것\n어려울 수 있지만 익숙한 인터페이스"
+customBtn.Font = Enum.Font.GothamBold
+customBtn.TextSize = 14
+customBtn.TextColor3 = Color3.new(1, 1, 1)
+customBtn.AutoButtonColor = true
+customBtn.ZIndex = 21
+customBtn.TextWrapped = true
+customBtn.Parent = choiceFrame
+Instance.new("UICorner", customBtn)
+
+local function makeChoice(choice)
+    uiChoice = choice
+    choiceGui:Destroy()
+end
+
+libBtn.MouseButton1Click:Connect(function() makeChoice("windui") end)
+customBtn.MouseButton1Click:Connect(function() makeChoice("custom") end)
+
+-- 선택 대기
+while uiChoice == nil do
+    task.wait(0.1)
+end
+
+if uiChoice == "windui" then
+-- ============================================================
+-- WindUI 버전 — 라이브러리 UI
+-- ============================================================
+
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ─── 단어 URL ───
+local WORDS_URLS = {
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%20%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt",       priority = 2},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt", priority = 1},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%EB%B0%A9%EC%96%B4%EB%8B%A8%EC%96%B4.txt",       priority = 3},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%EB%8B%A8%EC%96%B4%20%EB%AA%A9%EB%A1%9D.txt",       priority = 4},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9.txt",   priority = 1},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt",   priority = 2},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EB%B0%A9%EC%96%B4%EB%8B%A8%EC%96%B4.txt",   priority = 3},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EB%8B%A8%EC%96%B4%EB%AA%A9%EB%A1%9D.txt",   priority = 4},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9.txt", priority = 1},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EA%B3%B5%EA%B2%A9.txt",       priority = 2},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EA%B3%B5%EA%B2%A92.txt",      priority = 2},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EB%B0%A9%EC%96%B4.txt",       priority = 3},
+    {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EB%8B%A8%EC%96%B4%EB%AA%A9%EB%A1%9D.txt", priority = 4},
+}
+
+-- ─── 한글 유틸 ───
+local CHO = {"ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"}
+local function getCho(char)
+    local code = utf8.codepoint(char)
+    if code >= 44032 and code <= 55203 then return CHO[math.floor((code-44032)/588)+1] end
+    return char
+end
+local function getChoIndex(char)
+    local code = utf8.codepoint(char)
+    if code >= 44032 and code <= 55203 then return math.floor((code-44032)/588) end
+    return nil
+end
+local function getJungIndex(char)
+    local code = utf8.codepoint(char)
+    if code >= 44032 and code <= 55203 then return math.floor(((code-44032)%588)/28) end
+    return nil
+end
+local function replaceChoPart(char, idx)
+    local code = utf8.codepoint(char)
+    if code >= 44032 and code <= 55203 then return utf8.char(44032+idx*588+(code-44032)%588) end
+    return char
+end
+
+local N_TO_O = {[2]=true,[3]=true,[6]=true,[7]=true,[12]=true,[17]=true,[20]=true}
+local R_TO_O = {[2]=true,[3]=true,[4]=true,[6]=true,[7]=true,[12]=true,[16]=true,[17]=true,[20]=true}
+local function getDuumVariants(startChar)
+    local ci, ji = getChoIndex(startChar), getJungIndex(startChar)
+    if not ci or not ji then return {startChar} end
+    local v = {startChar}
+    if ci == 2 and N_TO_O[ji] then table.insert(v, replaceChoPart(startChar, 11))
+    elseif ci == 5 and R_TO_O[ji] then table.insert(v, replaceChoPart(startChar, 11)) end
+    return v
+end
+
+local function firstChar(word) for _,c in utf8.codes(word) do return utf8.char(c) end return word end
+local function lastChar(word)  local t={} for _,c in utf8.codes(word) do table.insert(t,utf8.char(c)) end return t[#t] end
+local function validWord(word) if #word<2 then return false end for _,c in utf8.codes(word) do if c<44032 or c>55203 then return false end end return true end
+
+-- ─── 상태 변수 ───
+local mode          = "ONE"
+local inputMode     = "MOBILE"
+local autoReply     = false
+local trollMode     = false
+local instantWinMode= false
+local isReplying    = false
+local isTrolling    = false
+local lastMyTurn    = false
+local lastTrollTurner = nil
+local lastStartChar = nil
+local usedWords     = {}
+local turnCounter   = 0
+local currentSpeed  = {Name="빠름", Delay={0.01,0.03}}
+local speeds = {
+    {Name="존빠", Delay={0.001,0.004}},
+    {Name="빠름", Delay={0.01,0.03}},
+    {Name="보통", Delay={0.03,0.07}},
+    {Name="느림", Delay={0.07,0.15}},
+    {Name="존느", Delay={0.2,0.5}},
+}
+
+-- ─── 사전 ───
+local dictionary, essentialDictionary, attackDictionary, defDictionary, normalDictionary = {},{},{},{},{}
+local essentialSet, attackSet, defSet = {},{},{}
+local killable, wordScore = {},{}
+
+local function hasWordStarting(char)
+    for _,v in ipairs(getDuumVariants(char)) do if dictionary[v] and #dictionary[v]>0 then return true end end
+    return false
+end
+
+local function loadWords()
+    dictionary={}; essentialDictionary={}; attackDictionary={}; defDictionary={}; normalDictionary={}
+    essentialSet={}; attackSet={}; defSet={}; killable={}; wordScore={}
+    local total, wordSet = 0, {}
+    for _,data in ipairs(WORDS_URLS) do
+        local ok,con = pcall(function() return game:HttpGet(data.url) end)
+        if ok and type(con)=="string" then
+            local function addWord(word)
+                if wordSet[word] or isDeleted(word) or not validWord(word) then return end
+                wordSet[word]=true
+                local f=firstChar(word)
+                dictionary[f]=dictionary[f]or{} table.insert(dictionary[f],word)
+                if data.priority==1 then essentialDictionary[f]=essentialDictionary[f]or{} table.insert(essentialDictionary[f],word) essentialSet[word]=true
+                elseif data.priority==2 then attackDictionary[f]=attackDictionary[f]or{} table.insert(attackDictionary[f],word) attackSet[word]=true
+                elseif data.priority==3 then defDictionary[f]=defDictionary[f]or{} table.insert(defDictionary[f],word) defSet[word]=true
+                else normalDictionary[f]=normalDictionary[f]or{} table.insert(normalDictionary[f],word) end
+                total+=1
+            end
+            for w in con:gmatch('"([^"]+)"') do w=w:match("^%s*(.-)%s*$"); if w~="" then addWord(w) end end
+            for line in con:gmatch("[^\r\n]+") do
+                if not line:find('"') and not line:match("^%[") and not line:match("^깊이") then
+                    for w in line:gmatch("[가-힣]+") do addWord(w) end
+                end
+            end
+        end
+        task.wait()
+    end
+    return total
+end
+
+local function calcScores()
+    killable={}; wordScore={}
+    for sc,wl in pairs(dictionary) do for _,w in ipairs(wl) do if not hasWordStarting(lastChar(w)) then killable[sc]=true; break end end end
+    local function atkBonus(w) if essentialSet[w] then return 500 elseif attackSet[w] then return 200 elseif defSet[w] then return 50 else return 0 end end
+    for _,wl in pairs(dictionary) do for _,w in ipairs(wl) do
+        if not wordScore[w] then
+            local lc=lastChar(w); local bonus=atkBonus(w)
+            local ec,opLC,seenLC,tooMany=0,{},{},false
+            for _,v in ipairs(getDuumVariants(lc)) do if tooMany then break end local ol=dictionary[v] if ol then ec+=#ol for _,ow in ipairs(ol) do local o=lastChar(ow) if not seenLC[o] then seenLC[o]=true table.insert(opLC,o) if #opLC>=20 then tooMany=true; break end end end end end
+            local score
+            if ec==0 then score=100000+bonus
+            elseif tooMany then score=-math.min(ec,200)*5+bonus
+            else
+                local is2K=true for _,o in ipairs(opLC) do local k=false for _,v in ipairs(getDuumVariants(o)) do if killable[v] then k=true; break end end if not k then is2K=false; break end end
+                score=(is2K and 10000 or 0)-math.min(ec,200)*5+bonus
+            end
+            wordScore[w]=score
+        end
+    end end
+end
+
+-- ─── 단어 찾기 ───
+local function findBestWord(sc)
+    local bw,bs=nil,-math.huge
+    for _,v in ipairs(getDuumVariants(sc)) do for _,dict in ipairs({essentialDictionary[v],attackDictionary[v],dictionary[v]}) do
+        if dict then for _,w in ipairs(dict) do if not usedWords[w] and (wordScore[w]or 0)>=100000 and (wordScore[w]or 0)>bs then bw=w; bs=wordScore[w]or 0 end end end
+    end end
+    return bw
+end
+local function findNormalWord(sc)
+    local bw,bs=nil,-math.huge
+    for _,v in ipairs(getDuumVariants(sc)) do local list=dictionary[v] if list then for _,w in ipairs(list) do
+        if not usedWords[w] then local s=wordScore[w]or 0
+            if instantWinMode then if s>=100000 and s>bs then bw=w; bs=s end
+            else if s>bs then bw=w; bs=s end end
+        end
+    end end end
+    return bw
+end
+local function findLongestWord(sc)
+    local bw,bl=nil,0
+    for _,v in ipairs(getDuumVariants(sc)) do local list=dictionary[v] if list then for _,w in ipairs(list) do if not usedWords[w] and #w>bl then bw=w; bl=#w end end end end
+    return bw
+end
+local function generateWord(sc)
+    if mode=="ONE" then return findBestWord(sc) elseif mode=="LONG" then return findLongestWord(sc) else return findNormalWord(sc) end
+end
+
+-- ─── 타이핑 & 제출 ───
+local function typingEffect(word)
+    local cur=""
+    for _,code in utf8.codes(word) do
+        local ch=utf8.char(code)
+        if inputMode=="MOBILE" then
+            ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TypingWord"):FireServer(cur..getCho(ch))
+            task.wait(math.random(currentSpeed.Delay[1]*1000,currentSpeed.Delay[2]*1000)/1000)
+        end
+        cur=cur..ch
+        ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TypingWord"):FireServer(cur)
+        task.wait(math.random(currentSpeed.Delay[1]*1000,currentSpeed.Delay[2]*1000)/1000)
+    end
+end
+local function submitWord(word,skip)
+    if not skip then typingEffect(word); task.wait(0.1) end
+    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("SumbitWord"):FireServer(word, turnCounter)
+    usedWords[word]=true; turnCounter+=2
+end
+local function doAutoInput()
+    pcall(function()
+        local label=player.PlayerGui.GameGui.TriesFrame.SpectatorTipLabel
+        local char=label.Text:match("'(.-)'")
+        if not char then return end
+        lastStartChar=char
+        local word=generateWord(char)
+        if word then submitWord(word,trollMode) end
+    end)
+end
+
+-- ─── 차례 감지 ───
+local function isMyTurn()
+    local g=player.PlayerGui; local gg=g:FindFirstChild("GameGui") if not gg then return false end
+    local l=gg:FindFirstChild("TimeLeftLabel") if not l then return false end
+    local n=l.Text:match("^(.-)의 차례") if not n then return false end
+    return n==player.Name or n==player.DisplayName
+end
+local function getCurrentTurner()
+    local g=player.PlayerGui; local gg=g:FindFirstChild("GameGui") if not gg then return nil end
+    local l=gg:FindFirstChild("TimeLeftLabel") if not l then return nil end
+    return l.Text:match("^(.-)의 차례")
+end
+
+-- ─── 단어 검색 ───
+local currentSearchType = "START"
+local function searchWords(query)
+    local results={}
+    if not query or query=="" then return results end
+    for _,wl in pairs(dictionary) do for _,w in ipairs(wl) do
+        local match=false
+        if currentSearchType=="START" then match=w:sub(1,#query)==query
+        elseif currentSearchType=="END" then match=w:sub(-#query)==query
+        elseif currentSearchType=="CONTAIN" then match=w:find(query,1,true)~=nil
+        elseif currentSearchType=="ATTACK" then match=(wordScore[w]or 0)>=100000 and w:sub(1,#query)==query end
+        if match and #results<50 then table.insert(results,w) end
+    end end
+    table.sort(results,function(a,b) return (wordScore[a]or 0)>(wordScore[b]or 0) end)
+    return results
+end
+
+-- ════════════════════════════════════════════════════════════
+--  WindUI 인터페이스 생성
+-- ════════════════════════════════════════════════════════════
+
+local Window = WindUI:CreateWindow({
+    Title = "끝말잇기 자동화 스크립트",
+    Icon = "solar:chat-round-dots-bold-duotone",
+    Author = "Auto Bot",
+    Folder = "끝말봇_WindUI",
+    Theme = "Dark",
+    Size = UDim2.fromOffset(580, 480),
+    Transparent = true,
+    SideBarWidth = 180,
+    HasOutline = true,
+})
+
+Window:EditOpenButton({
+    Title = "끝말잇기 봇 열기",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromHex("#4A90D9"), Color3.fromHex("#7B68EE")),
+    Draggable = true,
+})
+
+-- ──────── 탭 ────────
+local modeTab   = Window:Tab({ Title = "모드",          Icon = "solar:tuning-2-bold-duotone",   Desc = "로봇모드 · 트롤모드 · WIN · 자동대답" })
+local speedTab  = Window:Tab({ Title = "속도/타이핑",    Icon = "solar:keyboard-bold-duotone",   Desc = "타자속도 · 입력모드 설정" })
+local searchTab = Window:Tab({ Title = "단어검색",      Icon = "solar:magnifer-bold-duotone",   Desc = "단어 검색 · 삭제" })
+
+Window:SelectTab(1)
+
+-- ════════════ 모드 탭 ════════════
+
+modeTab:Section({ Title = "게임 모드" })
+
+modeTab:Dropdown({
+    Title = "게임 모드 선택",
+    Values = {"한방", "노멀", "긴단어"},
+    Multi = false,
+    Default = "한방",
+    Callback = function(v)
+        if v=="한방" then mode="ONE" elseif v=="노멀" then mode="NORMAL" elseif v=="긴단어" then mode="LONG" end
+    end,
+})
+
+modeTab:Section({ Title = "자동화" })
+
+modeTab:Toggle({
+    Title = "🤖 자동대답",
+    Desc = "내 차례를 자동 감지해서 단어를 입력합니다",
+    Value = false,
+    Callback = function(v) autoReply = v; lastMyTurn = false end,
+})
+
+modeTab:Toggle({
+    Title = "😈 트롤모드",
+    Desc = "누구 턴이든 감지해서 즉시 입력합니다",
+    Value = false,
+    Callback = function(v) trollMode = v; lastTrollTurner = nil end,
+})
+
+modeTab:Toggle({
+    Title = "⚡ WIN 모드",
+    Desc = "한방 단어를 최우선으로 선택합니다",
+    Value = false,
+    Callback = function(v) instantWinMode = v end,
+})
+
+modeTab:Section({ Title = "수동 조작" })
+
+modeTab:Button({
+    Title = "자동 입력 (1회)",
+    Desc = "현재 시작 글자로 즉시 한 번 입력",
+    Callback = function() task.spawn(doAutoInput) end,
+})
+
+modeTab:Button({
+    Title = "🔄 재생성",
+    Desc = "이전 글자로 다시 단어를 생성합니다",
+    Callback = function()
+        if lastStartChar then local w=generateWord(lastStartChar) if w then submitWord(w,false) end end
+    end,
+})
+
+modeTab:Button({
+    Title = "🗑 리셋",
+    Desc = "사용한 단어 기록을 초기화합니다",
+    Callback = function() usedWords={} end,
+})
+
+-- ════════════ 속도/타이핑 탭 ════════════
+
+speedTab:Section({ Title = "타자 속도" })
+
+speedTab:Dropdown({
+    Title = "속도 선택",
+    Values = {"존빠","빠름","보통","느림","존느"},
+    Multi = false,
+    Default = "빠름",
+    Callback = function(v) for _,s in ipairs(speeds) do if s.Name==v then currentSpeed=s; break end end end,
+})
+
+speedTab:Section({ Title = "입력 방식" })
+
+speedTab:Dropdown({
+    Title = "입력 모드",
+    Values = {"모바일","PC"},
+    Multi = false,
+    Default = "모바일",
+    Callback = function(v) inputMode = v=="모바일" and "MOBILE" or "PC" end,
+})
+
+-- ════════════ 단어검색 탭 ════════════
+
+searchTab:Section({ Title = "검색 설정" })
+
+searchTab:Dropdown({
+    Title = "검색 유형",
+    Values = {"시작 글자","끝 글자","포함","한방 단어"},
+    Multi = false,
+    Default = "시작 글자",
+    Callback = function(v)
+        local m={["시작 글자"]="START",["끝 글자"]="END",["포함"]="CONTAIN",["한방 단어"]="ATTACK"}
+        currentSearchType = m[v] or "START"
+    end,
+})
+
+searchTab:Section({ Title = "단어 검색" })
+
+searchTab:Input({
+    Title = "검색어 입력",
+    Placeholder = "글자를 입력하고 Enter를 누르세요",
+    Callback = function(text)
+        if text and #text>0 then
+            local results=searchWords(text)
+            if #results>0 then
+                local msg=table.concat(results,", ",1,math.min(#results,15))
+                WindUI:Notify({Title="검색 결과 ("..#results.."개)",Content=msg,Duration=7})
+            else
+                WindUI:Notify({Title="검색 결과",Content="단어를 찾을 수 없습니다",Duration=3})
+            end
+        end
+    end,
+})
+
+searchTab:Section({ Title = "단어 삭제" })
+
+searchTab:Input({
+    Title = "삭제할 단어 입력",
+    Placeholder = "단어를 입력하고 Enter를 누르세요",
+    Callback = function(text)
+        if text and #text>0 then
+            local w=text:match("[가-힣]+")
+            if w then deletedWords[w]=true; saveDeletedWords()
+                WindUI:Notify({Title="단어 삭제",Content=w.." 삭제됨 (재실행 시 적용)",Duration=3})
+            end
+        end
+    end,
+})
+
+-- ════════════ 단어 로드 & 게임 루프 ════════════
+
+task.spawn(function()
+    local total = loadWords()
+    calcScores()
+    WindUI:Notify({
+        Title = "✅ 로드 완료",
+        Content = "단어 "..total.."개 로드 & 점수 계산 완료",
+        Duration = 5,
+    })
+end)
+
+task.spawn(function()
+    while true do task.wait(0.2)
+        if not autoReply then lastMyTurn=false; continue end
+        local ok,mt=pcall(isMyTurn) if not ok or not mt then lastMyTurn=false; continue end
+        if lastMyTurn or isReplying then continue end
+        lastMyTurn=true; isReplying=true
+        task.spawn(function() doAutoInput(); isReplying=false end)
+    end
+end)
+
+task.spawn(function()
+    while true do task.wait(0.2)
+        if not trollMode or isTrolling then continue end
+        local ok,t=pcall(getCurrentTurner) if not ok or not t then lastTrollTurner=nil; continue end
+        if t==lastTrollTurner then continue end
+        lastTrollTurner=t; isTrolling=true
+        task.spawn(function() doAutoInput(); isTrolling=false end)
+    end
+end)
+
+else
+-- ============================================================
+-- 직접 만든 것 (기존 GUI)
+-- ============================================================
 if isMobile then
     print("기기 감지: 모바일 (모바일 최적화 스크립트 실행)")
     -- 모바일 스크립트 시작
@@ -5676,4 +6199,4 @@ turnCounter = turnCounter + 2
 end -- startBot
 
 end
-
+end -- uiChoice else (직접 만든 것)
