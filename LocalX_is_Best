@@ -59,8 +59,8 @@ gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = CoreGui
 
-local FRAME_H_CLOSED = 400
-local FRAME_H_OPEN   = 750
+local FRAME_H_CLOSED = 440
+local FRAME_H_OPEN   = 790
 local searchVisible = false
 local maxRoute = 2
 
@@ -218,6 +218,7 @@ introNotice.ZIndex = 21
 introNotice.Parent = introFrame
 
 local startBot
+local instantWinMode = false
 
 startBtn.MouseButton1Click:Connect(function()
         startBtn.Text = "로딩중..."
@@ -226,7 +227,7 @@ startBtn.MouseButton1Click:Connect(function()
         task.wait(0.05)
         introFrame:Destroy()
         frame.Visible = true
-        task.spawn(startBot)
+        if startBot then task.spawn(startBot) end
 end)
 
 
@@ -730,6 +731,7 @@ opacityBtn.TextColor3 = Color3.fromRGB(220, 210, 242)
 opacityBtn.AutoButtonColor = true
 opacityBtn.ZIndex = 5
 markOpacityControl(opacityBtn)
+
 opacityBtn.Parent = frame
 Instance.new("UICorner", opacityBtn)
 
@@ -821,15 +823,15 @@ local function setButtonOpacityFromInput(input, shouldSave)
         end
 end
 
-local opacityDragging = false
+local opacityDraggingg = false
 local function beginOpacityDrag(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
                 or input.UserInputType == Enum.UserInputType.Touch then
-                opacityDragging = true
+                opacityDraggingg = true
                 setButtonOpacityFromInput(input, true)
                 input.Changed:Connect(function()
                         if input.UserInputState == Enum.UserInputState.End then
-                                opacityDragging = false
+                                opacityDraggingg = false
                                 saveButtonOpacity()
                         end
                 end)
@@ -840,7 +842,7 @@ opacityBar.InputBegan:Connect(beginOpacityDrag)
 opacityKnob.InputBegan:Connect(beginOpacityDrag)
 
 UserInputService.InputChanged:Connect(function(input)
-        if opacityDragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+        if opacityDraggingg and (input.UserInputType == Enum.UserInputType.MouseMovement
                 or input.UserInputType == Enum.UserInputType.Touch) then
                 setButtonOpacityFromInput(input, false)
         end
@@ -1292,7 +1294,7 @@ button.TextSize = 18
 local autoReplyBtn = makeButton(
         "🤖 자동답변  OFF",
         UDim2.new(1, -10, 0, 24),
-        UDim2.new(0, 10, 0, 356),
+        UDim2.new(0, 10, 0, 386),
         Color3.fromRGB(60, 60, 80),
         frame
 )
@@ -1303,7 +1305,7 @@ autoReplyBtn.ZIndex = 3
 local trollBtn = makeButton(
         "😈 트롤모드  OFF",
         UDim2.new(1, -10, 0, 24),
-        UDim2.new(0, 10, 0, 378),
+        UDim2.new(0, 10, 0, 408),
         Color3.fromRGB(80, 30, 80),
         frame
 )
@@ -1548,20 +1550,20 @@ local function hasWordStarting(char)
         return false
 end
 
-local files = {
-        {name = "끄글필수공격단어.txt",  priority = 1},
-        {name = "끄글 공격단어.txt",     priority = 2},
-        {name = "끄글방어단어.txt",      priority = 3},
-        {name = "끄글단어 목록.txt",     priority = 4},
-        {name = "신엜룰 필수공격.txt",   priority = 1},
-        {name = "신엜룰 공격단어.txt",   priority = 2},
-        {name = "신엜룰 방어단어.txt",   priority = 3},
-        {name = "신엜룰 단어목록.txt",   priority = 4},
-        {name = "우리말샘 필수공격.txt", priority = 1},
-        {name = "우리말샘 공격.txt",     priority = 2},
-        {name = "우리말샘 공격2.txt",    priority = 2},
-        {name = "우리말샘 방어.txt",     priority = 3},
-        {name = "우리말샘 단어목록.txt", priority = 4},
+local WORDS_URLS = {
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%20%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt",       priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt", priority = 1},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%EB%B0%A9%EC%96%B4%EB%8B%A8%EC%96%B4.txt",       priority = 3},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%EB%8B%A8%EC%96%B4%20%EB%AA%A9%EB%A1%9D.txt",       priority = 4},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9.txt",   priority = 1},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt",   priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EB%B0%A9%EC%96%B4%EB%8B%A8%EC%96%B4.txt",   priority = 3},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EB%8B%A8%EC%96%B4%EB%AA%A9%EB%A1%9D.txt",   priority = 4},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9.txt", priority = 1},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EA%B3%B5%EA%B2%A9.txt",       priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EA%B3%B5%EA%B2%A92.txt",      priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EB%B0%A9%EC%96%B4.txt",       priority = 3},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EB%8B%A8%EC%96%B4%EB%AA%A9%EB%A1%9D.txt", priority = 4},
 }
 
 
@@ -1588,53 +1590,84 @@ end
 startBot = function()
 
         local trollMode = false
+        local turnCounter = 0
 
         local mr = tonumber(routeBox.Text)
         maxRoute = (mr and mr >= 1) and math.min(math.floor(mr), 5) or 2
         routeBox.Text = tostring(maxRoute)
 
         local total = 0
+        local wordSet = {}
 
-        for _, data in ipairs(files) do
-                local filename = data.name
-                if isfile(filename) then
-                        local success, file = pcall(readfile, filename)
-                        if success and file then
-                                for line in file:gmatch("[^\r\n]+") do
-                                        if not line:match("^%[") and not line:match("^깊이") then
-                                                for word in line:gmatch("[가-힣]+") do
-                                                        if not isDeleted(word) then
-                                                        if validWord(word) then
-                                                                local first = firstChar(word)
+        for _, data in ipairs(WORDS_URLS) do
+                local success, content = pcall(function()
+                        return game:HttpGet(data.url)
+                end)
+                if success and type(content) == "string" then
+                        -- JSON 형식 파싱 ("단어" 패턴)
+                        for word in content:gmatch('"([^"]+)"') do
+                                word = word:match("^%s*(.-)%s*$")
+                                if word ~= "" and not wordSet[word] and not isDeleted(word) and validWord(word) then
+                                        wordSet[word] = true
+                                        local first = firstChar(word)
+                                        dictionary[first] = dictionary[first] or {}
+                                        table.insert(dictionary[first], word)
 
-                                                                dictionary[first] = dictionary[first] or {}
-                                                                table.insert(dictionary[first], word)
+                                        if data.priority == 1 then
+                                                essentialDictionary[first] = essentialDictionary[first] or {}
+                                                table.insert(essentialDictionary[first], word)
+                                                essentialSet[word] = true
+                                        elseif data.priority == 2 then
+                                                attackDictionary[first] = attackDictionary[first] or {}
+                                                table.insert(attackDictionary[first], word)
+                                                attackSet[word] = true
+                                        elseif data.priority == 3 then
+                                                defDictionary[first] = defDictionary[first] or {}
+                                                table.insert(defDictionary[first], word)
+                                                defSet[word] = true
+                                        else
+                                                normalDictionary[first] = normalDictionary[first] or {}
+                                                table.insert(normalDictionary[first], word)
+                                        end
 
-                                                                if data.priority == 1 then
-                                                                        essentialDictionary[first] = essentialDictionary[first] or {}
-                                                                        table.insert(essentialDictionary[first], word)
-                                                                        essentialSet[word] = true
-                                                                elseif data.priority == 2 then
-                                                                        attackDictionary[first] = attackDictionary[first] or {}
-                                                                        table.insert(attackDictionary[first], word)
-                                                                        attackSet[word] = true
-                                                                elseif data.priority == 3 then
-                                                                        defDictionary[first] = defDictionary[first] or {}
-                                                                        table.insert(defDictionary[first], word)
-                                                                        defSet[word] = true
-                                                                else
-                                                                        normalDictionary[first] = normalDictionary[first] or {}
-                                                                        table.insert(normalDictionary[first], word)
-                                                                end
+                                        total += 1
+                                end
+                        end
 
-                                                                total += 1
+                        -- 일반 텍스트 라인 파싱
+                        for line in content:gmatch("[^\r\n]+") do
+                                if not line:find('"') and not line:match("^%[") and not line:match("^깊이") then
+                                        for word in line:gmatch("[가-힣]+") do
+                                                if not wordSet[word] and not isDeleted(word) and validWord(word) then
+                                                        wordSet[word] = true
+                                                        local first = firstChar(word)
+                                                        dictionary[first] = dictionary[first] or {}
+                                                        table.insert(dictionary[first], word)
+
+                                                        if data.priority == 1 then
+                                                                essentialDictionary[first] = essentialDictionary[first] or {}
+                                                                table.insert(essentialDictionary[first], word)
+                                                                essentialSet[word] = true
+                                                        elseif data.priority == 2 then
+                                                                attackDictionary[first] = attackDictionary[first] or {}
+                                                                table.insert(attackDictionary[first], word)
+                                                                attackSet[word] = true
+                                                        elseif data.priority == 3 then
+                                                                defDictionary[first] = defDictionary[first] or {}
+                                                                table.insert(defDictionary[first], word)
+                                                                defSet[word] = true
+                                                        else
+                                                                normalDictionary[first] = normalDictionary[first] or {}
+                                                                table.insert(normalDictionary[first], word)
                                                         end
-                                                        end
+
+                                                        total += 1
                                                 end
                                         end
                                 end
                         end
                 end
+                task.wait()
         end
 
         status.Text = "단어 " .. total .. "개 로드"
@@ -2584,8 +2617,9 @@ startBot = function()
                 ReplicatedStorage
                         :WaitForChild("Remotes")
                         :WaitForChild("SumbitWord")
-                        :FireServer(word)
+                        :FireServer(word, turnCounter)
                 usedWords[word] = true
+turnCounter = turnCounter + 2
         end
 
 
@@ -2631,6 +2665,22 @@ startBot = function()
         -- 자동입력
 
         button.MouseButton1Click:Connect(doAutoInput)
+
+        local winSwitch = makeButton("WIN: OFF", UDim2.new(1, -10, 0, 24), UDim2.new(0, 10, 0, 358), Color3.fromRGB(100, 40, 40), frame)
+        markOpacityControl(winSwitch)
+        winSwitch.MouseButton1Click:Connect(function()
+            instantWinMode = not instantWinMode
+            if instantWinMode then
+                winSwitch.Text = "WIN: ON"
+                winSwitch.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                status.Text = "INSTANT WIN 활성화"
+            else
+                winSwitch.Text = "WIN: OFF"
+                winSwitch.BackgroundColor3 = Color3.fromRGB(100, 40, 40)
+                status.Text = "INSTANT WIN 비활성화"
+            end
+        end)
+
 
 
         ---
@@ -2834,8 +2884,8 @@ gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = CoreGui
 
-local FRAME_H_CLOSED = 530
-local FRAME_H_OPEN   = 900
+local FRAME_H_CLOSED = 560
+local FRAME_H_OPEN   = 930
 local searchVisible = false
 local maxRoute = 2
 
@@ -2993,6 +3043,7 @@ introNotice.ZIndex = 21
 introNotice.Parent = introFrame
 
 local startBot
+local instantWinMode = false
 
 startBtn.MouseButton1Click:Connect(function()
         startBtn.Text = "로딩중..."
@@ -3001,7 +3052,7 @@ startBtn.MouseButton1Click:Connect(function()
         task.wait(0.05)
         introFrame:Destroy()
         frame.Visible = true
-        task.spawn(startBot)
+        if startBot then task.spawn(startBot) end
 end)
 
 
@@ -3505,6 +3556,7 @@ opacityBtn.TextColor3 = Color3.fromRGB(220, 210, 255)
 opacityBtn.AutoButtonColor = true
 opacityBtn.ZIndex = 5
 markOpacityControl(opacityBtn)
+
 opacityBtn.Parent = frame
 Instance.new("UICorner", opacityBtn)
 
@@ -3596,15 +3648,15 @@ local function setButtonOpacityFromInput(input, shouldSave)
         end
 end
 
-local opacityDragging = false
+local opacityDraggingg = false
 local function beginOpacityDrag(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
                 or input.UserInputType == Enum.UserInputType.Touch then
-                opacityDragging = true
+                opacityDraggingg = true
                 setButtonOpacityFromInput(input, true)
                 input.Changed:Connect(function()
                         if input.UserInputState == Enum.UserInputState.End then
-                                opacityDragging = false
+                                opacityDraggingg = false
                                 saveButtonOpacity()
                         end
                 end)
@@ -3615,7 +3667,7 @@ opacityBar.InputBegan:Connect(beginOpacityDrag)
 opacityKnob.InputBegan:Connect(beginOpacityDrag)
 
 UserInputService.InputChanged:Connect(function(input)
-        if opacityDragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+        if opacityDraggingg and (input.UserInputType == Enum.UserInputType.MouseMovement
                 or input.UserInputType == Enum.UserInputType.Touch) then
                 setButtonOpacityFromInput(input, false)
         end
@@ -4067,7 +4119,7 @@ button.TextSize = 18
 local autoReplyBtn = makeButton(
         "🤖 자동답변  OFF",
         UDim2.new(1, -20, 0, 30),
-        UDim2.new(0, 10, 0, 452),
+        UDim2.new(0, 10, 0, 488),
         Color3.fromRGB(60, 60, 80),
         frame
 )
@@ -4078,7 +4130,7 @@ autoReplyBtn.ZIndex = 3
 local trollBtn = makeButton(
         "😈 트롤모드  OFF",
         UDim2.new(1, -20, 0, 30),
-        UDim2.new(0, 10, 0, 488),
+        UDim2.new(0, 10, 0, 524),
         Color3.fromRGB(80, 30, 80),
         frame
 )
@@ -4323,20 +4375,20 @@ local function hasWordStarting(char)
         return false
 end
 
-local files = {
-        {name = "끄글필수공격단어.txt",  priority = 1},
-        {name = "끄글 공격단어.txt",     priority = 2},
-        {name = "끄글방어단어.txt",      priority = 3},
-        {name = "끄글단어 목록.txt",     priority = 4},
-        {name = "신엜룰 필수공격.txt",   priority = 1},
-        {name = "신엜룰 공격단어.txt",   priority = 2},
-        {name = "신엜룰 방어단어.txt",   priority = 3},
-        {name = "신엜룰 단어목록.txt",   priority = 4},
-        {name = "우리말샘 필수공격.txt", priority = 1},
-        {name = "우리말샘 공격.txt",     priority = 2},
-        {name = "우리말샘 공격2.txt",    priority = 2},
-        {name = "우리말샘 방어.txt",     priority = 3},
-        {name = "우리말샘 단어목록.txt", priority = 4},
+local WORDS_URLS = {
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%20%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt",       priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt", priority = 1},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%EB%B0%A9%EC%96%B4%EB%8B%A8%EC%96%B4.txt",       priority = 3},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EB%81%84%EA%B8%80%EB%8B%A8%EC%96%B4%20%EB%AA%A9%EB%A1%9D.txt",       priority = 4},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9.txt",   priority = 1},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EA%B3%B5%EA%B2%A9%EB%8B%A8%EC%96%B4.txt",   priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EB%B0%A9%EC%96%B4%EB%8B%A8%EC%96%B4.txt",   priority = 3},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%8B%A0%EC%97%9C%EB%A3%B0%20%EB%8B%A8%EC%96%B4%EB%AA%A9%EB%A1%9D.txt",   priority = 4},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%ED%95%84%EC%88%98%EA%B3%B5%EA%B2%A9.txt", priority = 1},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EA%B3%B5%EA%B2%A9.txt",       priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EA%B3%B5%EA%B2%A92.txt",      priority = 2},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EB%B0%A9%EC%96%B4.txt",       priority = 3},
+        {url = "https://raw.githubusercontent.com/Dvolooooooo/-/refs/heads/main/%EC%9A%B0%EB%A6%AC%EB%A7%90%EC%83%98%20%EB%8B%A8%EC%96%B4%EB%AA%A9%EB%A1%9D.txt", priority = 4},
 }
 
 
@@ -4363,53 +4415,84 @@ end
 startBot = function()
 
         local trollMode = false
+        local turnCounter = 0
 
         local mr = tonumber(routeBox.Text)
         maxRoute = (mr and mr >= 1) and math.min(math.floor(mr), 5) or 2
         routeBox.Text = tostring(maxRoute)
 
         local total = 0
+        local wordSet = {}
 
-        for _, data in ipairs(files) do
-                local filename = data.name
-                if isfile(filename) then
-                        local success, file = pcall(readfile, filename)
-                        if success and file then
-                                for line in file:gmatch("[^\r\n]+") do
-                                        if not line:match("^%[") and not line:match("^깊이") then
-                                                for word in line:gmatch("[가-힣]+") do
-                                                        if not isDeleted(word) then
-                                                        if validWord(word) then
-                                                                local first = firstChar(word)
+        for _, data in ipairs(WORDS_URLS) do
+                local success, content = pcall(function()
+                        return game:HttpGet(data.url)
+                end)
+                if success and type(content) == "string" then
+                        -- JSON 형식 파싱 ("단어" 패턴)
+                        for word in content:gmatch('"([^"]+)"') do
+                                word = word:match("^%s*(.-)%s*$")
+                                if word ~= "" and not wordSet[word] and not isDeleted(word) and validWord(word) then
+                                        wordSet[word] = true
+                                        local first = firstChar(word)
+                                        dictionary[first] = dictionary[first] or {}
+                                        table.insert(dictionary[first], word)
 
-                                                                dictionary[first] = dictionary[first] or {}
-                                                                table.insert(dictionary[first], word)
+                                        if data.priority == 1 then
+                                                essentialDictionary[first] = essentialDictionary[first] or {}
+                                                table.insert(essentialDictionary[first], word)
+                                                essentialSet[word] = true
+                                        elseif data.priority == 2 then
+                                                attackDictionary[first] = attackDictionary[first] or {}
+                                                table.insert(attackDictionary[first], word)
+                                                attackSet[word] = true
+                                        elseif data.priority == 3 then
+                                                defDictionary[first] = defDictionary[first] or {}
+                                                table.insert(defDictionary[first], word)
+                                                defSet[word] = true
+                                        else
+                                                normalDictionary[first] = normalDictionary[first] or {}
+                                                table.insert(normalDictionary[first], word)
+                                        end
 
-                                                                if data.priority == 1 then
-                                                                        essentialDictionary[first] = essentialDictionary[first] or {}
-                                                                        table.insert(essentialDictionary[first], word)
-                                                                        essentialSet[word] = true
-                                                                elseif data.priority == 2 then
-                                                                        attackDictionary[first] = attackDictionary[first] or {}
-                                                                        table.insert(attackDictionary[first], word)
-                                                                        attackSet[word] = true
-                                                                elseif data.priority == 3 then
-                                                                        defDictionary[first] = defDictionary[first] or {}
-                                                                        table.insert(defDictionary[first], word)
-                                                                        defSet[word] = true
-                                                                else
-                                                                        normalDictionary[first] = normalDictionary[first] or {}
-                                                                        table.insert(normalDictionary[first], word)
-                                                                end
+                                        total += 1
+                                end
+                        end
 
-                                                                total += 1
+                        -- 일반 텍스트 라인 파싱
+                        for line in content:gmatch("[^\r\n]+") do
+                                if not line:find('"') and not line:match("^%[") and not line:match("^깊이") then
+                                        for word in line:gmatch("[가-힣]+") do
+                                                if not wordSet[word] and not isDeleted(word) and validWord(word) then
+                                                        wordSet[word] = true
+                                                        local first = firstChar(word)
+                                                        dictionary[first] = dictionary[first] or {}
+                                                        table.insert(dictionary[first], word)
+
+                                                        if data.priority == 1 then
+                                                                essentialDictionary[first] = essentialDictionary[first] or {}
+                                                                table.insert(essentialDictionary[first], word)
+                                                                essentialSet[word] = true
+                                                        elseif data.priority == 2 then
+                                                                attackDictionary[first] = attackDictionary[first] or {}
+                                                                table.insert(attackDictionary[first], word)
+                                                                attackSet[word] = true
+                                                        elseif data.priority == 3 then
+                                                                defDictionary[first] = defDictionary[first] or {}
+                                                                table.insert(defDictionary[first], word)
+                                                                defSet[word] = true
+                                                        else
+                                                                normalDictionary[first] = normalDictionary[first] or {}
+                                                                table.insert(normalDictionary[first], word)
                                                         end
-                                                        end
+
+                                                        total += 1
                                                 end
                                         end
                                 end
                         end
                 end
+                task.wait()
         end
 
         status.Text = "단어 " .. total .. "개 로드"
@@ -5359,8 +5442,9 @@ startBot = function()
                 ReplicatedStorage
                         :WaitForChild("Remotes")
                         :WaitForChild("SumbitWord")
-                        :FireServer(word)
+                        :FireServer(word, turnCounter)
                 usedWords[word] = true
+turnCounter = turnCounter + 2
         end
 
 
@@ -5406,6 +5490,22 @@ startBot = function()
         -- 자동입력
 
         button.MouseButton1Click:Connect(doAutoInput)
+
+        local winSwitch = makeButton("WIN: OFF", UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 448), Color3.fromRGB(100, 40, 40), frame)
+        markOpacityControl(winSwitch)
+        winSwitch.MouseButton1Click:Connect(function()
+            instantWinMode = not instantWinMode
+            if instantWinMode then
+                winSwitch.Text = "WIN: ON"
+                winSwitch.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                status.Text = "INSTANT WIN 활성화"
+            else
+                winSwitch.Text = "WIN: OFF"
+                winSwitch.BackgroundColor3 = Color3.fromRGB(100, 40, 40)
+                status.Text = "INSTANT WIN 비활성화"
+            end
+        end)
+
 
 
         ---
